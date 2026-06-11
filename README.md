@@ -1,2 +1,2 @@
 # stockFlow
-StockFlow is a full-stack inventory and sales system for small businesses. It tracks materials, suppliers, purchases, stock batches, product compositions, sales, and stock movements to show how materials become products and how operations affect inventory.
+StockFlow is a full-stack inventory, production, and sales management platform for small businesses. It helps track materials, suppliers, purchases, stock batches, product compositions, sales, and inventory movements, making it easier to understand stock levels, production capacity, costs, and business performance.
