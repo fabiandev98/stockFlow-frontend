@@ -80,5 +80,24 @@
     "select_hierarchy": "Seleccione la jerarquía",
     "new_role_hierarchy_position": "(NUEVO ROL)",
     "no_roles": "No se encontraron roles."
+  },
+  "materials": {
+    "menu_title": "Materiales",
+    "index": "Lista de materiales",
+    "name": "Nombre",
+    "unit": "Unidad",
+    "minimum_stock": "Stock minimo",
+    "category": "Categoria",
+    "is_perishable": "Perecedero",
+    "default_expiration_days": "Dias de vencimiento por defecto",
+    "no_materials": "No se encontraron materiales."
+  },
+  "material_categories": {
+    "menu_title": "Categorias",
+    "new": "Nueva categoria",
+    "index": "Lista de categorias",
+    "name": "Nombre",
+    "materials_count": "Materiales",
+    "no_categories": "No se encontraron categorias."
   }
 }

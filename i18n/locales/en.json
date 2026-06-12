@@ -80,5 +80,24 @@
     "select_hierarchy": "Select the hierarchy",
     "new_role_hierarchy_position": "(NEW ROLE)",
     "no_roles": "No roles found."
+  },
+  "materials": {
+    "menu_title": "Materials",
+    "index": "Material list",
+    "name": "Name",
+    "unit": "Unit",
+    "minimum_stock": "Minimum stock",
+    "category": "Category",
+    "is_perishable": "Perishable",
+    "default_expiration_days": "Default expiration days",
+    "no_materials": "No materials found."
+  },
+  "material_categories": {
+    "menu_title": "Categories",
+    "new": "New category",
+    "index": "Category list",
+    "name": "Name",
+    "materials_count": "Materials",
+    "no_categories": "No categories found."
   }
 }

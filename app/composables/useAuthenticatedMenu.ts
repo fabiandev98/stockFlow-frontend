@@ -57,6 +57,54 @@ export default function useAuthenticatedMenu() {
           },
         ],
       },
+      {
+        label: t("materials.menu_title"),
+        icon: "i-lucide-boxes",
+        permissions: [
+          PERMISSION.MATERIALS_CREATE,
+          PERMISSION.MATERIALS_READ,
+          PERMISSION.MATERIALS_UPDATE,
+          PERMISSION.MATERIALS_DELETE,
+        ],
+        children: [
+          {
+            label: t("common.new"),
+            icon: "i-lucide-plus",
+            to: "/materials/create",
+            permissions: PERMISSION.MATERIALS_CREATE,
+          },
+          {
+            label: t("materials.index"),
+            icon: "i-lucide-list",
+            to: "/materials",
+            permissions: PERMISSION.MATERIALS_READ,
+          },
+          {
+            label: t("material_categories.menu_title"),
+            icon: "i-lucide-tags",
+            permissions: [
+              PERMISSION.MATERIAL_CATEGORIES_CREATE,
+              PERMISSION.MATERIAL_CATEGORIES_READ,
+              PERMISSION.MATERIAL_CATEGORIES_UPDATE,
+              PERMISSION.MATERIAL_CATEGORIES_DELETE,
+            ],
+            children: [
+              {
+                label: t("material_categories.new"),
+                icon: "i-lucide-plus",
+                to: "/material-categories/create",
+                permissions: PERMISSION.MATERIAL_CATEGORIES_CREATE,
+              },
+              {
+                label: t("material_categories.index"),
+                icon: "i-lucide-list",
+                to: "/material-categories",
+                permissions: PERMISSION.MATERIAL_CATEGORIES_READ,
+              },
+            ],
+          },
+        ],
+      },
     ];
   });
 

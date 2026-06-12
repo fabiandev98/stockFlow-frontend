@@ -9,6 +9,16 @@ export const PERMISSION = {
   ROLES_UPDATE: "roles-update",
   ROLES_DELETE: "roles-delete",
 
+  MATERIAL_CATEGORIES_CREATE: "material-categories-create",
+  MATERIAL_CATEGORIES_READ: "material-categories-read",
+  MATERIAL_CATEGORIES_UPDATE: "material-categories-update",
+  MATERIAL_CATEGORIES_DELETE: "material-categories-delete",
+
+  MATERIALS_CREATE: "materials-create",
+  MATERIALS_READ: "materials-read",
+  MATERIALS_UPDATE: "materials-update",
+  MATERIALS_DELETE: "materials-delete",
+
   MANAGE_API_KEYS_CREATE: "manage-api-keys-create",
   MANAGE_API_KEYS_READ: "manage-api-keys-read",
   MANAGE_API_KEYS_UPDATE: "manage-api-keys-update",
