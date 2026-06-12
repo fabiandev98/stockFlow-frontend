@@ -1,0 +1,182 @@
+@import "tailwindcss";
+@import "@nuxt/ui";
+
+/**
+ * ==========================================================================
+ * lynx UI THEME - Base Theme Configuration
+ * ==========================================================================
+ * This file serves as a template for Nuxt UI theming
+ * Customize these variables to match your brand
+ */
+
+/* ==========================================================================
+   1. THEME CONFIGURATION - Design Tokens
+   ========================================================================== */
+
+@theme static {
+   /* --------------------------------------------------------------------------
+     Custom Brand Color Palette
+     Define all shades from 50 to 950 for each custom color
+     -------------------------------------------------------------------------- */
+   --color-brand-50: #f5f7fa;
+   --color-brand-100: #e4e8ee;
+   --color-brand-200: #c9d1d9;
+   --color-brand-300: #a0aec0;
+   --color-brand-400: #4b6b8a;
+   --color-brand-500: #243447;
+   --color-brand-600: #1a2533;
+   --color-brand-700: #141a23;
+   --color-brand-800: #0d1117;
+   --color-brand-900: #090c10;
+   --color-brand-950: #050608;
+
+   /* --------------------------------------------------------------------------
+     Custom Accent Color (Optional)
+     Uncomment and customize if you need a secondary brand color
+     -------------------------------------------------------------------------- */
+   /* --color-accent-50: #fef2f2;
+  --color-accent-100: #fee2e2;
+  --color-accent-200: #fecaca;
+  --color-accent-300: #fca5a5;
+  --color-accent-400: #f87171;
+  --color-accent-500: #ef4444;
+  --color-accent-600: #dc2626;
+  --color-accent-700: #b91c1c;
+  --color-accent-800: #991b1b;
+  --color-accent-900: #7f1d1d;
+  --color-accent-950: #450a0a; */
+
+   /* --------------------------------------------------------------------------
+     Custom Fonts
+     Loaded automatically by @nuxt/fonts module
+     -------------------------------------------------------------------------- */
+   --font-sans: ui-sans-serif, system-ui, sans-serif;
+   --font-mono: ui-monospace, 'Cascadia Code', 'Source Code Pro', monospace;
+
+   /* --------------------------------------------------------------------------
+     Custom Breakpoints (Optional)
+     Uncomment to add extra large breakpoints
+     -------------------------------------------------------------------------- */
+   /* --breakpoint-3xl: 1920px;
+  --breakpoint-4xl: 2560px; */
+}
+
+/* ==========================================================================
+   2. CSS VARIABLES - Design System Tokens
+   ========================================================================== */
+
+:root {
+   /* --------------------------------------------------------------------------
+     Base Background Color
+     The main background color of your application
+     -------------------------------------------------------------------------- */
+   --ui-bg: #ffffff;
+
+   /* --------------------------------------------------------------------------
+     Background Variants
+     Customize different background states
+     -------------------------------------------------------------------------- */
+   --ui-bg-muted: var(--ui-color-neutral-50);
+   --ui-bg-elevated: var(--ui-color-neutral-100);
+   --ui-bg-accented: var(--ui-color-neutral-200);
+   --ui-bg-inverted: var(--ui-color-neutral-900);
+
+   /* --------------------------------------------------------------------------
+     Text Colors
+     Control text color hierarchy
+     -------------------------------------------------------------------------- */
+   --ui-text-dimmed: var(--ui-color-neutral-400);
+   --ui-text-muted: var(--ui-color-neutral-500);
+   --ui-text-toned: var(--ui-color-neutral-600);
+   --ui-text: var(--ui-color-neutral-700);
+   --ui-text-highlighted: var(--ui-color-neutral-900);
+   --ui-text-inverted: white;
+
+   /* --------------------------------------------------------------------------
+     Border Colors
+     Control border appearance
+     -------------------------------------------------------------------------- */
+   --ui-border: var(--ui-color-neutral-200);
+   --ui-border-muted: var(--ui-color-neutral-200);
+   --ui-border-accented: var(--ui-color-neutral-300);
+   --ui-border-inverted: var(--ui-color-neutral-900);
+
+   /* --------------------------------------------------------------------------
+     Semantic Colors
+     These are mapped to your theme colors in app.config.ts
+     Adjust the shade (500, 600, 700, etc.) to your preference
+     -------------------------------------------------------------------------- */
+   --ui-primary: var(--ui-color-primary-500);
+   --ui-secondary: var(--ui-color-secondary-500);
+   --ui-success: var(--ui-color-success-500);
+   --ui-info: var(--ui-color-info-500);
+   --ui-warning: var(--ui-color-warning-500);
+   --ui-error: var(--ui-color-error-500);
+
+   /* --------------------------------------------------------------------------
+     Border Radius
+     Base value for all rounded-* utilities (xs, sm, md, lg, xl, 2xl, 3xl)
+     -------------------------------------------------------------------------- */
+   --ui-radius: 0.5rem;
+   /* 8px - Modern, slightly rounded */
+
+   /* --------------------------------------------------------------------------
+     Container Width
+     Maximum width for Container component
+     -------------------------------------------------------------------------- */
+   --ui-container: 80rem;
+   /* 1280px (container-7xl) */
+
+   /* --------------------------------------------------------------------------
+     Header Height
+     Fixed height for Header component
+     -------------------------------------------------------------------------- */
+   --ui-header-height: --spacing(16);
+   /* 4rem / 64px */
+}
+
+/* ==========================================================================
+   3. DARK MODE CONFIGURATION
+   ========================================================================== */
+
+.dark {
+   /* --------------------------------------------------------------------------
+     Dark Mode Background
+     -------------------------------------------------------------------------- */
+   --ui-bg: #090c10;
+   --ui-bg-muted: var(--ui-color-neutral-900);
+   --ui-bg-elevated: var(--ui-color-neutral-800);
+   --ui-bg-accented: var(--ui-color-neutral-700);
+   --ui-bg-inverted: white;
+
+   /* --------------------------------------------------------------------------
+     Dark Mode Text Colors
+     -------------------------------------------------------------------------- */
+   --ui-text-dimmed: var(--ui-color-neutral-500);
+   --ui-text-muted: var(--ui-color-neutral-400);
+   --ui-text-toned: var(--ui-color-neutral-300);
+   --ui-text: var(--ui-color-neutral-200);
+   --ui-text-highlighted: white;
+   --ui-text-inverted: var(--ui-color-neutral-900);
+
+   /* --------------------------------------------------------------------------
+     Dark Mode Borders
+     -------------------------------------------------------------------------- */
+   --ui-border: var(--ui-color-neutral-800);
+   --ui-border-muted: var(--ui-color-neutral-800);
+   --ui-border-accented: var(--ui-color-neutral-700);
+   --ui-border-inverted: white;
+
+   /* --------------------------------------------------------------------------
+     Dark Mode Semantic Colors (Optional adjustments)
+     Uncomment to use different shades in dark mode
+     -------------------------------------------------------------------------- */
+   /* --ui-primary: var(--ui-color-primary-400);
+  --ui-secondary: var(--ui-color-secondary-400); */
+}
+
+/* ==========================================================================
+   4. CUSTOM UTILITY CLASSES (Optional)
+   ========================================================================== */
+
+/* Add any custom utility classes here */
