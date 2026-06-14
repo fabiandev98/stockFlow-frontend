@@ -35,15 +35,15 @@ const { data: categories } = await useAsyncData("material-categories-form", () =
 );
 
 const unitItems = [
-  { label: "g", value: "g" },
-  { label: "kg", value: "kg" },
-  { label: "ml", value: "ml" },
-  { label: "l", value: "l" },
-  { label: "oz", value: "oz" },
-  { label: "lb", value: "lb" },
-  { label: "u", value: "u" },
-  { label: "box", value: "box" },
-  { label: "pack", value: "pack" },
+  { label: t("materials.units.g"), value: "g" },
+  { label: t("materials.units.kg"), value: "kg" },
+  { label: t("materials.units.ml"), value: "ml" },
+  { label: t("materials.units.l"), value: "l" },
+  { label: t("materials.units.oz"), value: "oz" },
+  { label: t("materials.units.lb"), value: "lb" },
+  { label: t("materials.units.u"), value: "u" },
+  { label: t("materials.units.box"), value: "box" },
+  { label: t("materials.units.pack"), value: "pack" },
 ];
 
 const schema = z.object({

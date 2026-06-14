@@ -105,6 +105,73 @@ export default function useAuthenticatedMenu() {
           },
         ],
       },
+      {
+        label: t("suppliers.menu_title"),
+        icon: "i-lucide-truck",
+        permissions: [
+          PERMISSION.SUPPLIERS_CREATE,
+          PERMISSION.SUPPLIERS_READ,
+          PERMISSION.SUPPLIERS_UPDATE,
+          PERMISSION.SUPPLIERS_DELETE,
+        ],
+        children: [
+          {
+            label: t("common.new"),
+            icon: "i-lucide-plus",
+            to: "/suppliers/create",
+            permissions: PERMISSION.SUPPLIERS_CREATE,
+          },
+          {
+            label: t("suppliers.index"),
+            icon: "i-lucide-list",
+            to: "/suppliers",
+            permissions: PERMISSION.SUPPLIERS_READ,
+          },
+        ],
+      },
+      {
+        label: t("purchases.menu_title"),
+        icon: "i-lucide-shopping-cart",
+        permissions: [
+          PERMISSION.PURCHASES_CREATE,
+          PERMISSION.PURCHASES_READ,
+          PERMISSION.PURCHASES_UPDATE,
+          PERMISSION.PURCHASES_DELETE,
+        ],
+        children: [
+          {
+            label: t("common.new"),
+            icon: "i-lucide-plus",
+            to: "/purchases/create",
+            permissions: PERMISSION.PURCHASES_CREATE,
+          },
+          {
+            label: t("purchases.index"),
+            icon: "i-lucide-list",
+            to: "/purchases",
+            permissions: PERMISSION.PURCHASES_READ,
+          },
+        ],
+      },
+      {
+        label: t("inventory.menu_title"),
+        icon: "i-lucide-warehouse",
+        permissions: [PERMISSION.INVENTORY_READ, PERMISSION.STOCK_BATCHES_READ],
+        children: [
+          {
+            label: t("inventory.summary"),
+            icon: "i-lucide-chart-no-axes-column",
+            to: "/inventory",
+            permissions: PERMISSION.INVENTORY_READ,
+          },
+          {
+            label: t("inventory.batches"),
+            icon: "i-lucide-package-search",
+            to: "/inventory/batches",
+            permissions: PERMISSION.STOCK_BATCHES_READ,
+          },
+        ],
+      },
     ];
   });
 

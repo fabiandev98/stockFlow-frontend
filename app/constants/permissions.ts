@@ -19,6 +19,20 @@ export const PERMISSION = {
   MATERIALS_UPDATE: "materials-update",
   MATERIALS_DELETE: "materials-delete",
 
+  SUPPLIERS_CREATE: "suppliers-create",
+  SUPPLIERS_READ: "suppliers-read",
+  SUPPLIERS_UPDATE: "suppliers-update",
+  SUPPLIERS_DELETE: "suppliers-delete",
+
+  PURCHASES_CREATE: "purchases-create",
+  PURCHASES_READ: "purchases-read",
+  PURCHASES_UPDATE: "purchases-update",
+  PURCHASES_DELETE: "purchases-delete",
+
+  STOCK_BATCHES_READ: "stock-batches-read",
+
+  INVENTORY_READ: "inventory-read",
+
   MANAGE_API_KEYS_CREATE: "manage-api-keys-create",
   MANAGE_API_KEYS_READ: "manage-api-keys-read",
   MANAGE_API_KEYS_UPDATE: "manage-api-keys-update",

@@ -8,6 +8,7 @@
     "generic_unknown_error": "An unknown error has happened, contact support.",
     "generic_error": "An error happened: {context}",
     "new": "New",
+    "back": "Back",
     "id": "ID",
     "action": "Action",
     "pagination_results": "Showing {from} to {to} of {total} results",
@@ -90,7 +91,18 @@
     "category": "Category",
     "is_perishable": "Perishable",
     "default_expiration_days": "Default expiration days",
-    "no_materials": "No materials found."
+    "no_materials": "No materials found.",
+    "units": {
+      "g": "g - grams",
+      "kg": "kg - kilograms",
+      "ml": "ml - milliliters",
+      "l": "l - liters",
+      "oz": "oz - ounces",
+      "lb": "lb - pounds",
+      "u": "u - units",
+      "box": "box - boxes",
+      "pack": "pack - packages"
+    }
   },
   "material_categories": {
     "menu_title": "Categories",
@@ -99,5 +111,55 @@
     "name": "Name",
     "materials_count": "Materials",
     "no_categories": "No categories found."
+  },
+  "suppliers": {
+    "menu_title": "Suppliers",
+    "index": "Supplier list",
+    "name": "Name",
+    "contact_name": "Contact",
+    "phone": "Phone",
+    "email": "Email",
+    "purchases_count": "Purchases",
+    "no_suppliers": "No suppliers found."
+  },
+  "purchases": {
+    "menu_title": "Purchases",
+    "index": "Purchase list",
+    "resource_name": "Purchase",
+    "supplier": "Supplier",
+    "purchase_date": "Purchase date",
+    "notes": "Notes",
+    "items": "Purchase items",
+    "items_count": "Items",
+    "add_item": "Add item",
+    "material": "Material",
+    "quantity": "Quantity",
+    "unit_cost": "Unit cost",
+    "expiration_date": "Expiration date",
+    "not_perishable": "Not applicable",
+    "registered_by": "Registered by",
+    "created_batches": "Created batches",
+    "batch": "Batch",
+    "initial_quantity": "Initial quantity",
+    "available_quantity": "Available quantity",
+    "status": "Status",
+    "item_total": "Item total",
+    "total_cost": "Total cost",
+    "no_purchases": "No purchases found."
+  },
+  "inventory": {
+    "menu_title": "Inventory",
+    "summary": "Summary",
+    "batches": "Batches",
+    "batch": "Batch",
+    "material": "Material",
+    "available_stock": "Available stock",
+    "next_expiration_date": "Next expiration",
+    "received_date": "Received date",
+    "status": "Status",
+    "low_stock": "Low stock",
+    "in_stock": "In stock",
+    "no_inventory": "No inventory found.",
+    "no_batches": "No batches found."
   }
 }

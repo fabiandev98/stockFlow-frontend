@@ -8,6 +8,7 @@
     "generic_unknown_error": "Ha ocurrido un error desconocido, contacte al soporte.",
     "generic_error": "Ocurrió un error: {context}",
     "new": "Nuevo",
+    "back": "Volver",
     "id": "ID",
     "action": "Acción",
     "pagination_results": "Mostrando {from} a {to} de {total} resultados",
@@ -90,7 +91,18 @@
     "category": "Categoria",
     "is_perishable": "Perecedero",
     "default_expiration_days": "Dias de vencimiento por defecto",
-    "no_materials": "No se encontraron materiales."
+    "no_materials": "No se encontraron materiales.",
+    "units": {
+      "g": "g - gramos",
+      "kg": "kg - kilogramos",
+      "ml": "ml - mililitros",
+      "l": "l - litros",
+      "oz": "oz - onzas",
+      "lb": "lb - libras",
+      "u": "u - unidades",
+      "box": "box - cajas",
+      "pack": "pack - paquetes"
+    }
   },
   "material_categories": {
     "menu_title": "Categorias",
@@ -99,5 +111,55 @@
     "name": "Nombre",
     "materials_count": "Materiales",
     "no_categories": "No se encontraron categorias."
+  },
+  "suppliers": {
+    "menu_title": "Proveedores",
+    "index": "Lista de proveedores",
+    "name": "Nombre",
+    "contact_name": "Contacto",
+    "phone": "Telefono",
+    "email": "Correo",
+    "purchases_count": "Compras",
+    "no_suppliers": "No se encontraron proveedores."
+  },
+  "purchases": {
+    "menu_title": "Compras",
+    "index": "Lista de compras",
+    "resource_name": "Compra",
+    "supplier": "Proveedor",
+    "purchase_date": "Fecha de compra",
+    "notes": "Notas",
+    "items": "Items de compra",
+    "items_count": "Items",
+    "add_item": "Agregar item",
+    "material": "Material",
+    "quantity": "Cantidad",
+    "unit_cost": "Costo unitario",
+    "expiration_date": "Fecha de vencimiento",
+    "not_perishable": "No aplica",
+    "registered_by": "Registrado por",
+    "created_batches": "Lotes creados",
+    "batch": "Lote",
+    "initial_quantity": "Cantidad inicial",
+    "available_quantity": "Cantidad disponible",
+    "status": "Estado",
+    "item_total": "Total item",
+    "total_cost": "Costo total",
+    "no_purchases": "No se encontraron compras."
+  },
+  "inventory": {
+    "menu_title": "Inventario",
+    "summary": "Resumen",
+    "batches": "Lotes",
+    "batch": "Lote",
+    "material": "Material",
+    "available_stock": "Stock disponible",
+    "next_expiration_date": "Próximo vencimiento",
+    "received_date": "Fecha de recepción",
+    "status": "Estado",
+    "low_stock": "Stock bajo",
+    "in_stock": "En stock",
+    "no_inventory": "No se encontró inventario.",
+    "no_batches": "No se encontraron lotes."
   }
 }
