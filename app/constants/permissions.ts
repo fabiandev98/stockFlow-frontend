@@ -24,12 +24,28 @@ export const PERMISSION = {
   SUPPLIERS_UPDATE: "suppliers-update",
   SUPPLIERS_DELETE: "suppliers-delete",
 
+  PRODUCT_CATEGORIES_CREATE: "product-categories-create",
+  PRODUCT_CATEGORIES_READ: "product-categories-read",
+  PRODUCT_CATEGORIES_UPDATE: "product-categories-update",
+  PRODUCT_CATEGORIES_DELETE: "product-categories-delete",
+
+  PRODUCTS_CREATE: "products-create",
+  PRODUCTS_READ: "products-read",
+  PRODUCTS_UPDATE: "products-update",
+  PRODUCTS_DELETE: "products-delete",
+
   PURCHASES_CREATE: "purchases-create",
   PURCHASES_READ: "purchases-read",
   PURCHASES_UPDATE: "purchases-update",
   PURCHASES_DELETE: "purchases-delete",
 
+  SALES_CREATE: "sales-create",
+  SALES_READ: "sales-read",
+
   STOCK_BATCHES_READ: "stock-batches-read",
+
+  STOCK_MOVEMENTS_CREATE: "stock-movements-create",
+  STOCK_MOVEMENTS_READ: "stock-movements-read",
 
   INVENTORY_READ: "inventory-read",
 
