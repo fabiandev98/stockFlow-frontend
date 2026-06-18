@@ -194,6 +194,49 @@ function quantity(
             </div>
           </div>
         </div>
+
+        <div v-if="item.product_stock_movements?.length" class="space-y-2">
+          <h3 class="text-sm font-medium">
+            {{ $t("sales.inventory_movements") }}
+          </h3>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div
+              v-for="movement in item.product_stock_movements"
+              :key="movement.id"
+              class="border border-neutral-200 rounded p-3"
+            >
+              <div class="flex items-center justify-between gap-3">
+                <p class="font-medium">
+                  {{ movement.product?.name ?? `#${movement.product_id}` }}
+                </p>
+                <UBadge color="neutral" variant="soft">
+                  {{ $t("inventory.batch") }} #{{ movement.product_batch_id }}
+                </UBadge>
+              </div>
+
+              <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <p class="text-xs text-neutral-500">
+                    {{ $t("sales.quantity") }}
+                  </p>
+                  <p class="text-sm">
+                    {{ quantity(movement.quantity, "u") }}
+                  </p>
+                </div>
+
+                <div>
+                  <p class="text-xs text-neutral-500">
+                    {{ $t("inventory.movement_date") }}
+                  </p>
+                  <p class="text-sm">
+                    {{ formatDisplayDate(movement.movement_date) }}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   </div>

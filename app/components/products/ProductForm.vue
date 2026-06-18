@@ -52,17 +52,25 @@ const schema = z.object({
   product_category_id: z.number().nullable(),
   name: z.string().min(2),
   sale_price: z.number().min(0),
+  is_composed: z.boolean(),
   is_active: z.boolean(),
-  compositions: z
-    .array(
-      z.object({
-        material_id: z.number().min(1),
-        quantity_required: z.number().min(0.01),
-        unit: z.string().min(1),
-      })
-    )
-    .min(1),
-});
+  compositions: z.array(
+    z.object({
+      material_id: z.number().nullable(),
+      quantity_required: z.number().min(0.01),
+      unit: z.string().min(1),
+    })
+  ),
+}).refine(
+  (data) =>
+    !data.is_composed ||
+    (data.compositions.length > 0 &&
+      data.compositions.every((composition) => composition.material_id !== null)),
+  {
+    path: ["compositions"],
+    message: "Composed products require at least one material",
+  }
+);
 
 function createComposition(
   composition?: Partial<ProductFormComposition>
@@ -79,12 +87,14 @@ const state = reactive<{
   product_category_id: number | null;
   name: string;
   sale_price: number;
+  is_composed: boolean;
   is_active: boolean;
   compositions: ProductFormComposition[];
 }>({
   product_category_id: props.product?.product_category_id ?? null,
   name: props.product?.name ?? "",
   sale_price: Number(props.product?.sale_price ?? 0),
+  is_composed: props.product?.is_composed ?? true,
   is_active: props.product?.is_active ?? true,
   compositions:
     props.product?.compositions?.map((composition) =>
@@ -128,12 +138,15 @@ function payloadFromState(): ProductPayload {
     product_category_id: state.product_category_id,
     name: state.name,
     sale_price: state.sale_price,
+    is_composed: state.is_composed,
     is_active: state.is_active,
-    compositions: state.compositions.map((composition) => ({
-      material_id: composition.material_id,
-      quantity_required: composition.quantity_required,
-      unit: composition.unit,
-    })),
+    compositions: state.is_composed
+      ? state.compositions.map((composition) => ({
+          material_id: composition.material_id,
+          quantity_required: composition.quantity_required,
+          unit: composition.unit,
+        }))
+      : [],
   };
 }
 
@@ -164,6 +177,7 @@ async function onSubmit() {
         product_category_id: null,
         name: "",
         sale_price: 0,
+        is_composed: true,
         is_active: true,
         compositions: [createComposition()],
       });
@@ -230,7 +244,14 @@ async function onSubmit() {
       <UCheckbox v-model="state.is_active" :label="$t('products.is_active')" />
     </UFormField>
 
-    <div class="space-y-3">
+    <UFormField name="is_composed">
+      <UCheckbox
+        v-model="state.is_composed"
+        :label="$t('products.is_composed')"
+      />
+    </UFormField>
+
+    <div v-if="state.is_composed" class="space-y-3">
       <div class="flex items-center justify-between gap-3">
         <h2 class="text-base font-medium">
           {{ $t("products.compositions") }}

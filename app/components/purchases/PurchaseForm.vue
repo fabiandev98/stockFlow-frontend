@@ -8,17 +8,23 @@ import {
   useAsyncData,
   useI18n,
   useMaterialModule,
+  useProductModule,
   usePurchaseModule,
   useSupplierModule,
   useToast,
 } from "#imports";
 import type { Material } from "~/types/material";
+import type { Product } from "~/types/product";
 import type { Purchase, PurchasePayload } from "~/types/purchase";
 import { formatPeso } from "~/utils/currency-format";
 
+type PurchaseItemType = "material" | "product";
+
 interface PurchaseFormItem {
   key: number;
+  item_type: PurchaseItemType;
   material_id: number | null;
+  product_id: number | null;
   quantity: number;
   unit_cost: number;
   expiration_date: string | null;
@@ -36,6 +42,7 @@ const { t } = useI18n();
 const toast = useToast();
 const { fetchSuppliers } = useSupplierModule();
 const { fetchMaterials } = useMaterialModule();
+const { fetchProducts } = useProductModule();
 const { createPurchase, updatePurchase } = usePurchaseModule();
 
 const isUpdating = computed<boolean>(() => !!props.purchase);
@@ -48,6 +55,9 @@ const { data: suppliers } = await useAsyncData("purchase-form-suppliers", () =>
 const { data: materials } = await useAsyncData("purchase-form-materials", () =>
   fetchMaterials({})
 );
+const { data: products } = await useAsyncData("purchase-form-products", () =>
+  fetchProducts({ filters: { is_composed: false, is_active: true } })
+);
 
 const schema = z.object({
   supplier_id: z.number().nullable(),
@@ -56,11 +66,18 @@ const schema = z.object({
   items: z
     .array(
       z.object({
-        material_id: z.number().min(1),
+        item_type: z.enum(["material", "product"]),
+        material_id: z.number().nullable(),
+        product_id: z.number().nullable(),
         quantity: z.number().min(0.01),
         unit_cost: z.number().min(0),
         expiration_date: z.string().nullable(),
-      })
+      }).refine(
+        (item) =>
+          (item.item_type === "material" && item.material_id !== null) ||
+          (item.item_type === "product" && item.product_id !== null),
+        { message: "Select an item" }
+      )
     )
     .min(1),
 });
@@ -72,7 +89,9 @@ function today(): string {
 function createItem(item?: Partial<PurchaseFormItem>): PurchaseFormItem {
   return {
     key: nextItemKey.value++,
+    item_type: item?.item_type ?? "material",
     material_id: item?.material_id ?? null,
+    product_id: item?.product_id ?? null,
     quantity: item?.quantity ?? 1,
     unit_cost: item?.unit_cost ?? 0,
     expiration_date: item?.expiration_date ?? null,
@@ -92,6 +111,8 @@ const state = reactive<{
     props.purchase?.items?.map((item) =>
       createItem({
         material_id: item.material_id,
+        product_id: item.product_id,
+        item_type: item.product_id ? "product" : "material",
         quantity: Number(item.quantity),
         unit_cost: Number(item.unit_cost),
         expiration_date: item.expiration_date?.slice(0, 10) ?? null,
@@ -100,12 +121,23 @@ const state = reactive<{
 });
 
 const materialItems = computed<Material[]>(() => materials.value?.data ?? []);
+const productItems = computed<Product[]>(() => products.value?.data ?? []);
+const itemTypeItems = computed(() => [
+  { label: t("purchases.item_types.material"), value: "material" },
+  { label: t("purchases.item_types.product"), value: "product" },
+]);
 const totalCost = computed<number>(() =>
   state.items.reduce((total, item) => total + item.quantity * item.unit_cost, 0)
 );
 
 function selectedMaterial(item: PurchaseFormItem): Material | undefined {
   return materialItems.value.find((material) => material.id === item.material_id);
+}
+
+function handleItemTypeChange(item: PurchaseFormItem): void {
+  item.material_id = null;
+  item.product_id = null;
+  item.expiration_date = null;
 }
 
 function handleMaterialChange(item: PurchaseFormItem): void {
@@ -137,7 +169,8 @@ function payloadFromState(): PurchasePayload {
     purchase_date: state.purchase_date,
     notes: nullableText(state.notes),
     items: state.items.map((item) => ({
-      material_id: item.material_id,
+      material_id: item.item_type === "material" ? item.material_id : null,
+      product_id: item.item_type === "product" ? item.product_id : null,
       quantity: item.quantity,
       unit_cost: item.unit_cost,
       expiration_date: item.expiration_date,
@@ -241,6 +274,23 @@ async function onSubmit() {
         class="grid grid-cols-1 lg:grid-cols-12 gap-3 items-end border border-neutral-200 rounded p-3"
       >
         <UFormField
+          :label="$t('purchases.item_type')"
+          :name="`items.${index}.item_type`"
+          class="lg:col-span-2"
+          required
+        >
+          <USelect
+            v-model="item.item_type"
+            :items="itemTypeItems"
+            value-key="value"
+            label-key="label"
+            class="w-full"
+            @update:model-value="handleItemTypeChange(item)"
+          />
+        </UFormField>
+
+        <UFormField
+          v-if="item.item_type === 'material'"
           :label="$t('purchases.material')"
           :name="`items.${index}.material_id`"
           class="lg:col-span-3"
@@ -253,6 +303,22 @@ async function onSubmit() {
             label-key="name"
             class="w-full"
             @update:model-value="handleMaterialChange(item)"
+          />
+        </UFormField>
+
+        <UFormField
+          v-else
+          :label="$t('purchases.product')"
+          :name="`items.${index}.product_id`"
+          class="lg:col-span-3"
+          required
+        >
+          <USelect
+            v-model="item.product_id"
+            :items="productItems"
+            value-key="id"
+            label-key="name"
+            class="w-full"
           />
         </UFormField>
 
@@ -287,11 +353,12 @@ async function onSubmit() {
         </UFormField>
 
         <UFormField
-          v-if="selectedMaterial(item)?.is_perishable"
+          v-if="
+            item.item_type === 'product' || selectedMaterial(item)?.is_perishable
+          "
           :label="$t('purchases.expiration_date')"
           :name="`items.${index}.expiration_date`"
           class="lg:col-span-2"
-          required
         >
           <UInput
             v-model="item.expiration_date"

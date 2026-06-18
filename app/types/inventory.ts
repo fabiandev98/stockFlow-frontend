@@ -1,4 +1,5 @@
 import type { Material, MaterialCategory } from "~/types/material";
+import type { Product, ProductCategory } from "~/types/product";
 import type { StockBatch } from "~/types/purchase";
 import type { User } from "~/types/user";
 
@@ -10,6 +11,12 @@ export interface InventoryMaterial extends Material {
 }
 
 export type InventoryStockBatch = StockBatch;
+
+export interface InventoryProduct extends Product {
+  category?: ProductCategory | null;
+  available_stock: string;
+  next_expiration_date: string | null;
+}
 
 export interface InventoryAlerts {
   low_stock_materials: InventoryMaterial[];
@@ -23,7 +30,8 @@ export type StockMovementType =
   | "adjustment_in"
   | "adjustment_out"
   | "waste"
-  | "expired";
+  | "expired"
+  | "sale";
 
 export interface StockMovementPayload {
   stock_batch_id: number | null;

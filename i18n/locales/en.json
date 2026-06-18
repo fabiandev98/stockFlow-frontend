@@ -127,6 +127,11 @@
     "category": "Category",
     "sale_price": "Sale price",
     "formatted_sale_price": "Formatted price",
+    "type": "Type",
+    "is_composed": "Composed from materials",
+    "composed": "Composed",
+    "simple": "Simple",
+    "available_to_sell": "Available to sell",
     "is_active": "Active",
     "active": "Active",
     "inactive": "Inactive",
@@ -158,7 +163,9 @@
     "items": "Purchase items",
     "items_count": "Items",
     "add_item": "Add item",
+    "item_type": "Item type",
     "material": "Material",
+    "product": "Product",
     "quantity": "Quantity",
     "unit_cost": "Unit cost",
     "expiration_date": "Expiration date",
@@ -171,7 +178,11 @@
     "status": "Status",
     "item_total": "Item total",
     "total_cost": "Total cost",
-    "no_purchases": "No purchases found."
+    "no_purchases": "No purchases found.",
+    "item_types": {
+      "material": "Material",
+      "product": "Simple product"
+    }
   },
   "sales": {
     "menu_title": "Sales",
@@ -196,6 +207,7 @@
     "summary": "Summary",
     "alerts": "Alerts",
     "alerts_description": "Review low-stock materials and batches that need attention.",
+    "products": "Simple products",
     "batches": "Batches",
     "batch": "Batch",
     "movements": "Movements",
@@ -204,6 +216,7 @@
     "movement_type": "Movement type",
     "movement_date": "Movement date",
     "material": "Material",
+    "product": "Product",
     "available_stock": "Available stock",
     "next_expiration_date": "Next expiration",
     "received_date": "Received date",
@@ -218,6 +231,7 @@
     "expiring_batches": "Expiring batches",
     "in_stock": "In stock",
     "no_inventory": "No inventory found.",
+    "no_products": "No simple products found in inventory.",
     "no_batches": "No batches found.",
     "no_movements": "No movements found.",
     "no_low_stock_alerts": "There are no low-stock materials.",

@@ -44,6 +44,12 @@ const columns: TableColumn<Product>[] = [
     enableSorting: false,
   },
   { accessorKey: "sale_price", header: t("products.sale_price") },
+  { accessorKey: "is_composed", header: t("products.type") },
+  {
+    accessorKey: "available_to_sell",
+    header: t("products.available_to_sell"),
+    enableSorting: false,
+  },
   {
     accessorKey: "compositions_count",
     header: t("products.compositions_count"),
@@ -106,6 +112,16 @@ async function handleDelete(
   >
     <template #sale_price-cell="{ row }">
       {{ formatPeso(row.original.sale_price) }}
+    </template>
+
+    <template #is_composed-cell="{ row }">
+      <UBadge :color="row.original.is_composed ? 'primary' : 'neutral'">
+        {{
+          row.original.is_composed
+            ? $t("products.composed")
+            : $t("products.simple")
+        }}
+      </UBadge>
     </template>
 
     <template #is_active-cell="{ row }">

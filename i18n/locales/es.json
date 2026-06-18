@@ -127,6 +127,11 @@
     "category": "Categoria",
     "sale_price": "Precio de venta",
     "formatted_sale_price": "Precio formateado",
+    "type": "Tipo",
+    "is_composed": "Se compone de materiales",
+    "composed": "Compuesto",
+    "simple": "Simple",
+    "available_to_sell": "Disponible para vender",
     "is_active": "Activo",
     "active": "Activo",
     "inactive": "Inactivo",
@@ -158,7 +163,9 @@
     "items": "Items de compra",
     "items_count": "Items",
     "add_item": "Agregar item",
+    "item_type": "Tipo de item",
     "material": "Material",
+    "product": "Producto",
     "quantity": "Cantidad",
     "unit_cost": "Costo unitario",
     "expiration_date": "Fecha de vencimiento",
@@ -171,7 +178,11 @@
     "status": "Estado",
     "item_total": "Total item",
     "total_cost": "Costo total",
-    "no_purchases": "No se encontraron compras."
+    "no_purchases": "No se encontraron compras.",
+    "item_types": {
+      "material": "Material",
+      "product": "Producto simple"
+    }
   },
   "sales": {
     "menu_title": "Ventas",
@@ -196,6 +207,7 @@
     "summary": "Resumen",
     "alerts": "Alertas",
     "alerts_description": "Revisa materiales con stock bajo y lotes que requieren atención.",
+    "products": "Productos simples",
     "batches": "Lotes",
     "batch": "Lote",
     "movements": "Movimientos",
@@ -204,6 +216,7 @@
     "movement_type": "Tipo de movimiento",
     "movement_date": "Fecha de movimiento",
     "material": "Material",
+    "product": "Producto",
     "available_stock": "Stock disponible",
     "next_expiration_date": "Próximo vencimiento",
     "received_date": "Fecha de recepción",
@@ -218,6 +231,7 @@
     "expiring_batches": "Lotes por vencer",
     "in_stock": "En stock",
     "no_inventory": "No se encontró inventario.",
+    "no_products": "No se encontraron productos simples en inventario.",
     "no_batches": "No se encontraron lotes.",
     "no_movements": "No se encontraron movimientos.",
     "no_low_stock_alerts": "No hay materiales con stock bajo.",

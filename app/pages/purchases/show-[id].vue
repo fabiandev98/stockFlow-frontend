@@ -126,10 +126,14 @@ function quantity(
         <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
           <div>
             <p class="text-xs text-neutral-500">
-              {{ $t("purchases.material") }}
+              {{ item.product ? $t("purchases.product") : $t("purchases.material") }}
             </p>
             <p class="font-medium">
-              {{ item.material?.name ?? `#${item.material_id}` }}
+              {{
+                item.product?.name ??
+                item.material?.name ??
+                `#${item.product_id ?? item.material_id}`
+              }}
             </p>
           </div>
 
@@ -138,7 +142,7 @@ function quantity(
               {{ $t("purchases.quantity") }}
             </p>
             <p class="font-medium">
-              {{ quantity(item.quantity, item.material?.unit) }}
+              {{ quantity(item.quantity, item.product ? "u" : item.material?.unit) }}
             </p>
           </div>
 
@@ -210,6 +214,62 @@ function quantity(
                   </p>
                   <p class="text-sm">
                     {{ quantity(batch.available_quantity, item.material?.unit) }}
+                  </p>
+                </div>
+
+                <div>
+                  <p class="text-xs text-neutral-500">
+                    {{ $t("purchases.expiration_date") }}
+                  </p>
+                  <p class="text-sm">
+                    {{
+                      batch.expiration_date
+                        ? formatDisplayDate(batch.expiration_date)
+                        : $t("purchases.not_perishable")
+                    }}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div v-if="item.product_batches?.length" class="space-y-2">
+          <h3 class="text-sm font-medium">
+            {{ $t("purchases.created_batches") }}
+          </h3>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div
+              v-for="batch in item.product_batches"
+              :key="batch.id"
+              class="border border-neutral-200 rounded p-3"
+            >
+              <div class="flex items-center justify-between gap-3">
+                <p class="font-medium">
+                  {{ $t("purchases.batch") }} #{{ batch.id }}
+                </p>
+                <UBadge color="neutral" variant="soft">
+                  {{ batch.status }}
+                </UBadge>
+              </div>
+
+              <div class="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <p class="text-xs text-neutral-500">
+                    {{ $t("purchases.initial_quantity") }}
+                  </p>
+                  <p class="text-sm">
+                    {{ quantity(batch.initial_quantity, "u") }}
+                  </p>
+                </div>
+
+                <div>
+                  <p class="text-xs text-neutral-500">
+                    {{ $t("purchases.available_quantity") }}
+                  </p>
+                  <p class="text-sm">
+                    {{ quantity(batch.available_quantity, "u") }}
                   </p>
                 </div>
 

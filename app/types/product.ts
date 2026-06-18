@@ -29,6 +29,7 @@ export interface ProductPayload {
   product_category_id: number | null;
   name: string;
   sale_price: number;
+  is_composed: boolean;
   is_active: boolean;
   compositions: ProductCompositionPayload[];
 }
@@ -36,6 +37,7 @@ export interface ProductPayload {
 export interface Product extends ProductPayload {
   id: number;
   category?: ProductCategory | null;
+  available_to_sell?: string;
   compositions_count?: number;
   compositions?: ProductComposition[];
   created_at: string;

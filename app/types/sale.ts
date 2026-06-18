@@ -1,4 +1,5 @@
 import type { Product } from "./product";
+import type { ProductBatch } from "./purchase";
 import type { User } from "./user";
 import type { StockMovement } from "./inventory";
 
@@ -22,6 +23,24 @@ export interface SaleItem {
   unit_price: string;
   total_price: string;
   stock_movements?: StockMovement[];
+  product_stock_movements?: ProductStockMovement[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ProductStockMovement {
+  id: number;
+  product_id: number;
+  product?: Product;
+  product_batch_id: number;
+  product_batch?: ProductBatch;
+  sale_item_id: number | null;
+  user_id: number | null;
+  user?: User | null;
+  type: "sale";
+  quantity: string;
+  reason: string | null;
+  movement_date: string;
   created_at: string;
   updated_at: string;
 }

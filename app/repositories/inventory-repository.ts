@@ -2,6 +2,7 @@ import { Repository } from "./repository";
 import type {
   InventoryAlerts,
   InventoryMaterial,
+  InventoryProduct,
   InventoryStockBatch,
   StockMovement,
   StockMovementPayload,
@@ -15,6 +16,16 @@ export class InventoryRepository extends Repository {
       : "/inventory/materials";
 
     return this.api<LaravelPaginationWrapper<InventoryMaterial>>(endpoint, {
+      method: "GET",
+    });
+  }
+
+  productSummary(queryString?: string) {
+    const endpoint = queryString
+      ? `/inventory/products?${queryString}`
+      : "/inventory/products";
+
+    return this.api<LaravelPaginationWrapper<InventoryProduct>>(endpoint, {
       method: "GET",
     });
   }
