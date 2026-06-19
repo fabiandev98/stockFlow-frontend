@@ -10,6 +10,12 @@ export default function useAuthenticatedMenu() {
   const raw = computed<LynxNavigationMenuItem[]>(() => {
     return [
       {
+        label: t("dashboard.menu_title"),
+        icon: "i-lucide-layout-dashboard",
+        to: "/home",
+        permissions: PERMISSION.INVENTORY_READ,
+      },
+      {
         label: t("users.menu_title"),
         icon: "i-lucide-user",
         permissions: [

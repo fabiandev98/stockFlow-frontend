@@ -58,6 +58,43 @@
     "invalid_token_desc": "Token inválido.",
     "logout": "Cerrar sesión"
   },
+  "dashboard": {
+    "menu_title": "Dashboard",
+    "subtitle": "Métricas principales de ventas, compras e inventario.",
+    "period": "Periodo",
+    "start_date": "Fecha inicial",
+    "end_date": "Fecha final",
+    "expiration_window_days": "Días para vencimiento",
+    "sales_by_day": "Ventas por día",
+    "top_products": "Productos más vendidos",
+    "quantity_sold": "{quantity} unidades vendidas",
+    "no_sales_by_day": "No hay ventas en este periodo.",
+    "no_top_products": "No hay productos vendidos en este periodo.",
+    "periods": {
+      "today": "Hoy",
+      "last_7_days": "Últimos 7 días",
+      "month": "Este mes",
+      "last_30_days": "Últimos 30 días",
+      "custom": "Personalizado"
+    },
+    "blocks": {
+      "sales": "Ventas",
+      "purchases": "Compras",
+      "inventory": "Inventario",
+      "products": "Productos"
+    },
+    "metrics": {
+      "sales_total": "Ventas totales",
+      "sales_count": "Ventas registradas",
+      "items_sold": "Items vendidos",
+      "purchases_total": "Compras totales",
+      "purchases_count": "Compras registradas",
+      "inventory_value": "Valor del inventario",
+      "low_stock_materials": "Materiales bajo stock",
+      "expiring_batches": "Lotes por vencer",
+      "expired_batches": "Lotes vencidos"
+    }
+  },
   "users": {
     "menu_title": "Usuarios",
     "index": "Lista de usuarios",

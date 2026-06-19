@@ -58,6 +58,43 @@
     "invalid_token_desc": "Invalid token.",
     "logout": "Log out"
   },
+  "dashboard": {
+    "menu_title": "Dashboard",
+    "subtitle": "Main metrics for sales, purchases, and inventory.",
+    "period": "Period",
+    "start_date": "Start date",
+    "end_date": "End date",
+    "expiration_window_days": "Expiration days",
+    "sales_by_day": "Sales by day",
+    "top_products": "Top products",
+    "quantity_sold": "{quantity} units sold",
+    "no_sales_by_day": "No sales found in this period.",
+    "no_top_products": "No products sold in this period.",
+    "periods": {
+      "today": "Today",
+      "last_7_days": "Last 7 days",
+      "month": "This month",
+      "last_30_days": "Last 30 days",
+      "custom": "Custom"
+    },
+    "blocks": {
+      "sales": "Sales",
+      "purchases": "Purchases",
+      "inventory": "Inventory",
+      "products": "Products"
+    },
+    "metrics": {
+      "sales_total": "Total sales",
+      "sales_count": "Sales registered",
+      "items_sold": "Items sold",
+      "purchases_total": "Total purchases",
+      "purchases_count": "Purchases registered",
+      "inventory_value": "Inventory value",
+      "low_stock_materials": "Low-stock materials",
+      "expiring_batches": "Expiring batches",
+      "expired_batches": "Expired batches"
+    }
+  },
   "users": {
     "menu_title": "Users",
     "index": "User list",
