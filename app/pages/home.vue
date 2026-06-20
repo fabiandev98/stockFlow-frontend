@@ -5,6 +5,7 @@ import {
   useAsyncData,
   useDashboardModule,
   useI18n,
+  useLocalePath,
 } from "#imports";
 import { PERMISSION } from "~/constants/permissions";
 import { formatPeso } from "~/utils/currency-format";
@@ -16,6 +17,7 @@ definePageMeta({
 });
 
 const { t } = useI18n();
+const lp = useLocalePath();
 const { fetchSummary } = useDashboardModule();
 
 type PeriodPreset = "today" | "last_7_days" | "month" | "last_30_days" | "custom";
@@ -47,6 +49,11 @@ const selectedPeriod = ref<PeriodPreset>("month");
 const customStartDate = ref(formatDateInput(startOfMonth(new Date())));
 const customEndDate = ref(formatDateInput(new Date()));
 const expirationWindowDays = ref(7);
+const isConfigurationOpen = ref(false);
+
+const visibleBlocksCount = computed(
+  () => Object.values(blockVisibility).filter(Boolean).length
+);
 
 const dateRange = computed(() => {
   const today = new Date();
@@ -99,16 +106,19 @@ const salesCards = computed(() => [
     label: t("dashboard.metrics.sales_total"),
     value: formatPeso(summary.value?.sales.total),
     icon: "i-lucide-banknote",
+    to: lp("/sales"),
   },
   {
     label: t("dashboard.metrics.sales_count"),
     value: String(summary.value?.sales.count ?? 0),
     icon: "i-lucide-receipt",
+    to: lp("/sales"),
   },
   {
     label: t("dashboard.metrics.items_sold"),
     value: Number(summary.value?.sales.items_sold ?? 0).toFixed(2),
     icon: "i-lucide-package-check",
+    to: lp("/sales"),
   },
 ]);
 
@@ -117,11 +127,13 @@ const purchaseCards = computed(() => [
     label: t("dashboard.metrics.purchases_total"),
     value: formatPeso(summary.value?.purchases.total),
     icon: "i-lucide-shopping-cart",
+    to: lp("/purchases"),
   },
   {
     label: t("dashboard.metrics.purchases_count"),
     value: String(summary.value?.purchases.count ?? 0),
     icon: "i-lucide-clipboard-list",
+    to: lp("/purchases"),
   },
 ]);
 
@@ -130,21 +142,25 @@ const inventoryCards = computed(() => [
     label: t("dashboard.metrics.inventory_value"),
     value: formatPeso(summary.value?.inventory.inventory_value),
     icon: "i-lucide-warehouse",
+    to: lp("/inventory"),
   },
   {
     label: t("dashboard.metrics.low_stock_materials"),
     value: String(summary.value?.inventory.low_stock_materials ?? 0),
     icon: "i-lucide-triangle-alert",
+    to: lp("/inventory/alerts"),
   },
   {
     label: t("dashboard.metrics.expiring_batches"),
     value: String(summary.value?.inventory.expiring_batches ?? 0),
     icon: "i-lucide-calendar-clock",
+    to: lp("/inventory/alerts"),
   },
   {
     label: t("dashboard.metrics.expired_batches"),
     value: String(summary.value?.inventory.expired_batches ?? 0),
     icon: "i-lucide-calendar-x",
+    to: lp("/inventory/alerts"),
   },
 ]);
 
@@ -175,6 +191,12 @@ function addDays(date: Date, days: number): Date {
   nextDate.setDate(nextDate.getDate() + days);
   return nextDate;
 }
+
+function showAllBlocks(): void {
+  Object.keys(blockVisibility).forEach((key) => {
+    blockVisibility[key as DashboardBlock] = true;
+  });
+}
 </script>
 
 <template>
@@ -198,20 +220,24 @@ function addDays(date: Date, days: number): Date {
           />
         </UFormField>
 
-        <UFormField :label="$t('dashboard.start_date')">
+        <UFormField
+          v-if="selectedPeriod === 'custom'"
+          :label="$t('dashboard.start_date')"
+        >
           <UInput
             v-model="customStartDate"
             type="date"
-            :disabled="selectedPeriod !== 'custom'"
             class="w-full"
           />
         </UFormField>
 
-        <UFormField :label="$t('dashboard.end_date')">
+        <UFormField
+          v-if="selectedPeriod === 'custom'"
+          :label="$t('dashboard.end_date')"
+        >
           <UInput
             v-model="customEndDate"
             type="date"
-            :disabled="selectedPeriod !== 'custom'"
             class="w-full"
           />
         </UFormField>
@@ -223,19 +249,58 @@ function addDays(date: Date, days: number): Date {
             class="w-full"
           />
         </UFormField>
+
+        <div class="flex items-end">
+          <UButton
+            icon="i-lucide-sliders-horizontal"
+            color="neutral"
+            variant="outline"
+            class="w-full justify-center"
+            @click="isConfigurationOpen = true"
+          >
+            {{
+              $t("dashboard.configure_view_with_count", {
+                visible: visibleBlocksCount,
+                total: blockOptions.length,
+              })
+            }}
+          </UButton>
+        </div>
       </div>
     </div>
 
-    <UCard>
-      <div class="flex flex-wrap gap-4">
-        <UCheckbox
-          v-for="block in blockOptions"
-          :key="block.key"
-          v-model="blockVisibility[block.key]"
-          :label="block.label"
-        />
-      </div>
-    </UCard>
+    <UModal
+      v-model:open="isConfigurationOpen"
+      :title="$t('dashboard.configure_view')"
+    >
+      <template #body>
+        <div class="space-y-4">
+          <p class="text-sm text-muted">
+            {{ $t("dashboard.configure_view_description") }}
+          </p>
+
+          <div class="grid gap-3 sm:grid-cols-2">
+            <UCheckbox
+              v-for="block in blockOptions"
+              :key="block.key"
+              v-model="blockVisibility[block.key]"
+              :label="block.label"
+            />
+          </div>
+        </div>
+      </template>
+
+      <template #footer>
+        <div class="flex items-center justify-between gap-3 w-full">
+          <UButton color="neutral" variant="ghost" @click="showAllBlocks">
+            {{ $t("dashboard.show_all_blocks") }}
+          </UButton>
+          <UButton @click="isConfigurationOpen = false">
+            {{ $t("common.confirm") }}
+          </UButton>
+        </div>
+      </template>
+    </UModal>
 
     <div v-if="pending" class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
       <USkeleton v-for="index in 4" :key="index" class="h-28 rounded-lg" />
@@ -257,6 +322,15 @@ function addDays(date: Date, days: number): Date {
                 <p class="text-2xl font-semibold text-highlighted mt-1">
                   {{ card.value }}
                 </p>
+                <UButton
+                  :to="card.to"
+                  size="xs"
+                  color="neutral"
+                  variant="link"
+                  class="px-0 mt-2"
+                >
+                  {{ $t("dashboard.view_detail") }}
+                </UButton>
               </div>
               <UIcon :name="card.icon" class="size-8 text-primary" />
             </div>
@@ -309,6 +383,15 @@ function addDays(date: Date, days: number): Date {
                 <p class="text-2xl font-semibold text-highlighted mt-1">
                   {{ card.value }}
                 </p>
+                <UButton
+                  :to="card.to"
+                  size="xs"
+                  color="neutral"
+                  variant="link"
+                  class="px-0 mt-2"
+                >
+                  {{ $t("dashboard.view_detail") }}
+                </UButton>
               </div>
               <UIcon :name="card.icon" class="size-8 text-primary" />
             </div>
@@ -331,6 +414,15 @@ function addDays(date: Date, days: number): Date {
                 <p class="text-2xl font-semibold text-highlighted mt-1">
                   {{ card.value }}
                 </p>
+                <UButton
+                  :to="card.to"
+                  size="xs"
+                  color="neutral"
+                  variant="link"
+                  class="px-0 mt-2"
+                >
+                  {{ $t("dashboard.view_detail") }}
+                </UButton>
               </div>
               <UIcon :name="card.icon" class="size-8 text-primary" />
             </div>
