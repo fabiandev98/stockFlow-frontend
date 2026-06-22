@@ -247,6 +247,8 @@
     "item_total": "Total item",
     "total_amount": "Total venta",
     "inventory_movements": "Movimientos de inventario",
+    "quantity_exceeds_available": "Hay productos con cantidad mayor al stock disponible.",
+    "quantity_exceeds_available_with_quantity": "Seleccionado: {selected}. Disponible: {available}",
     "no_sales": "No se encontraron ventas."
   },
   "inventory": {

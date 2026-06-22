@@ -247,6 +247,8 @@
     "item_total": "Item total",
     "total_amount": "Sale total",
     "inventory_movements": "Inventory movements",
+    "quantity_exceeds_available": "Some products exceed the available stock.",
+    "quantity_exceeds_available_with_quantity": "Selected: {selected}. Available: {available}",
     "no_sales": "No sales found."
   },
   "inventory": {

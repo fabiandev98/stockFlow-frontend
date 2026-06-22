@@ -79,9 +79,49 @@ const totalAmount = computed<number>(() =>
     return total + item.quantity * Number(product?.sale_price ?? 0);
   }, 0)
 );
+const hasInsufficientStock = computed<boolean>(() =>
+  state.items.some((item) => quantityExceedsAvailable(item))
+);
 
 function selectedProduct(item: SaleFormItem): Product | undefined {
   return productItems.value.find((product) => product.id === item.product_id);
+}
+
+function availableProductItems(item: SaleFormItem): Product[] {
+  const selectedProductIds = state.items
+    .filter((saleItem) => saleItem.key !== item.key)
+    .map((saleItem) => saleItem.product_id)
+    .filter((productId): productId is number => productId !== null);
+
+  return productItems.value.filter(
+    (product) => !selectedProductIds.includes(product.id)
+  );
+}
+
+function availableToSell(item: SaleFormItem): number {
+  return Number(selectedProduct(item)?.available_to_sell ?? 0);
+}
+
+function availableLabel(item: SaleFormItem): string {
+  return `${availableToSell(item).toFixed(2)} u`;
+}
+
+function selectedQuantity(item: SaleFormItem): number {
+  if (!item.product_id) return 0;
+
+  return state.items
+    .filter((saleItem) => saleItem.product_id === item.product_id)
+    .reduce((total, saleItem) => total + Number(saleItem.quantity ?? 0), 0);
+}
+
+function selectedQuantityLabel(item: SaleFormItem): string {
+  return `${selectedQuantity(item).toFixed(2)} u`;
+}
+
+function quantityExceedsAvailable(item: SaleFormItem): boolean {
+  if (!item.product_id) return false;
+
+  return selectedQuantity(item) > availableToSell(item);
 }
 
 function itemTotal(item: SaleFormItem): string {
@@ -113,6 +153,16 @@ function payloadFromState(): SalePayload {
 }
 
 async function onSubmit() {
+  if (hasInsufficientStock.value) {
+    toast.add({
+      title: t("common.generic_error_title"),
+      description: t("sales.quantity_exceeds_available"),
+      color: "error",
+    });
+
+    return;
+  }
+
   isSubmitting.value = true;
 
   try {
@@ -181,8 +231,18 @@ async function onSubmit() {
       <div
         v-for="(item, index) in state.items"
         :key="item.key"
-        class="grid grid-cols-1 lg:grid-cols-12 gap-3 items-end border border-neutral-200 rounded p-3"
+        class="relative grid grid-cols-1 lg:grid-cols-12 gap-3 items-end border border-neutral-200 rounded p-4 pr-14"
       >
+        <UButton
+          type="button"
+          icon="i-lucide-trash"
+          color="error"
+          variant="ghost"
+          class="absolute right-3 top-3"
+          :disabled="state.items.length === 1"
+          @click="removeItem(index)"
+        />
+
         <UFormField
           :label="$t('sales.product')"
           :name="`items.${index}.product_id`"
@@ -191,7 +251,7 @@ async function onSubmit() {
         >
           <USelect
             v-model="item.product_id"
-            :items="productItems"
+            :items="availableProductItems(item)"
             value-key="id"
             label-key="name"
             class="w-full"
@@ -210,6 +270,7 @@ async function onSubmit() {
             min="1"
             step="1"
             class="w-full"
+            :color="quantityExceedsAvailable(item) ? 'error' : 'neutral'"
           />
         </UFormField>
 
@@ -222,24 +283,33 @@ async function onSubmit() {
           </p>
         </div>
 
-        <div class="lg:col-span-2">
+        <div class="lg:col-span-3">
           <p class="text-xs text-neutral-500">
-            {{ $t("sales.item_total") }}
+            {{ $t("products.available_to_sell") }}
           </p>
-          <p class="font-medium">
-            {{ itemTotal(item) }}
+          <p
+            class="font-medium"
+            :class="quantityExceedsAvailable(item) ? 'text-error' : ''"
+          >
+            {{ availableLabel(item) }}
+          </p>
+          <p v-if="quantityExceedsAvailable(item)" class="mt-1 text-xs text-error">
+            {{
+              $t("sales.quantity_exceeds_available_with_quantity", {
+                available: availableLabel(item),
+                selected: selectedQuantityLabel(item),
+              })
+            }}
           </p>
         </div>
 
-        <div class="lg:col-span-1 flex justify-end">
-          <UButton
-            type="button"
-            icon="i-lucide-trash"
-            color="error"
-            variant="ghost"
-            :disabled="state.items.length === 1"
-            @click="removeItem(index)"
-          />
+        <div class="lg:col-span-12 flex items-center justify-end gap-3 border-t border-neutral-200 pt-3 mt-1">
+          <p class="text-xs text-neutral-500">
+            {{ $t("sales.item_total") }}
+          </p>
+          <p class="text-lg font-semibold text-highlighted">
+            {{ itemTotal(item) }}
+          </p>
         </div>
       </div>
     </div>
@@ -253,7 +323,12 @@ async function onSubmit() {
       </p>
     </div>
 
-    <UButton type="submit" :loading="isSubmitting" color="brand">
+    <UButton
+      type="submit"
+      :loading="isSubmitting"
+      :disabled="hasInsufficientStock"
+      color="brand"
+    >
       {{ $t("common.submit") }}
     </UButton>
   </UForm>
