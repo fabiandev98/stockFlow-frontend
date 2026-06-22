@@ -3,7 +3,6 @@ import { InventoryRepository } from "~/repositories/inventory-repository";
 import type {
   InventoryAlerts,
   InventoryMaterial,
-  InventoryProduct,
   InventoryStockBatch,
   StockMovement,
   StockMovementPayload,
@@ -21,15 +20,6 @@ export function useInventoryModule() {
   }): Promise<LaravelPaginationWrapper<InventoryMaterial>> {
     const queryString = buildQueryString(params);
     return await inventoryRepo.materialSummary(queryString);
-  }
-
-  async function fetchInventoryProducts(params: {
-    page?: number;
-    filters?: Record<string, string | number | boolean>;
-    sort?: string;
-  }): Promise<LaravelPaginationWrapper<InventoryProduct>> {
-    const queryString = buildQueryString(params);
-    return await inventoryRepo.productSummary(queryString);
   }
 
   async function fetchInventoryAlerts(
@@ -64,7 +54,6 @@ export function useInventoryModule() {
 
   return {
     fetchInventoryMaterials,
-    fetchInventoryProducts,
     fetchInventoryAlerts,
     fetchStockBatches,
     fetchStockMovements,

@@ -27,6 +27,7 @@ interface PurchaseFormItem {
   product_id: number | null;
   quantity: number;
   unit_cost: number;
+  has_expiration: boolean;
   expiration_date: string | null;
 }
 
@@ -71,6 +72,7 @@ const schema = z.object({
         product_id: z.number().nullable(),
         quantity: z.number().min(0.01),
         unit_cost: z.number().min(0),
+        has_expiration: z.boolean(),
         expiration_date: z.string().nullable(),
       }).refine(
         (item) =>
@@ -94,6 +96,7 @@ function createItem(item?: Partial<PurchaseFormItem>): PurchaseFormItem {
     product_id: item?.product_id ?? null,
     quantity: item?.quantity ?? 1,
     unit_cost: item?.unit_cost ?? 0,
+    has_expiration: item?.has_expiration ?? !!item?.expiration_date,
     expiration_date: item?.expiration_date ?? null,
   };
 }
@@ -115,6 +118,7 @@ const state = reactive<{
         item_type: item.product_id ? "product" : "material",
         quantity: Number(item.quantity),
         unit_cost: Number(item.unit_cost),
+        has_expiration: !!item.expiration_date,
         expiration_date: item.expiration_date?.slice(0, 10) ?? null,
       })
     ) ?? [createItem()],
@@ -122,7 +126,7 @@ const state = reactive<{
 
 const materialItems = computed<Material[]>(() => materials.value?.data ?? []);
 const productItems = computed<Product[]>(() => products.value?.data ?? []);
-const itemTypeItems = computed(() => [
+const itemTypeItems = computed<{ label: string; value: PurchaseItemType }[]>(() => [
   { label: t("purchases.item_types.material"), value: "material" },
   { label: t("purchases.item_types.product"), value: "product" },
 ]);
@@ -137,13 +141,28 @@ function selectedMaterial(item: PurchaseFormItem): Material | undefined {
 function handleItemTypeChange(item: PurchaseFormItem): void {
   item.material_id = null;
   item.product_id = null;
+  item.has_expiration = false;
   item.expiration_date = null;
 }
 
 function handleMaterialChange(item: PurchaseFormItem): void {
   if (!selectedMaterial(item)?.is_perishable) {
+    item.has_expiration = false;
     item.expiration_date = null;
   }
+}
+
+function setItemType(item: PurchaseFormItem, itemType: PurchaseItemType): void {
+  if (item.item_type === itemType) return;
+
+  item.item_type = itemType;
+  handleItemTypeChange(item);
+}
+
+function shouldShowExpirationDate(item: PurchaseFormItem): boolean {
+  return item.item_type === "material"
+    ? !!selectedMaterial(item)?.is_perishable
+    : item.has_expiration;
 }
 
 function itemTotal(item: PurchaseFormItem): string {
@@ -173,7 +192,7 @@ function payloadFromState(): PurchasePayload {
       product_id: item.item_type === "product" ? item.product_id : null,
       quantity: item.quantity,
       unit_cost: item.unit_cost,
-      expiration_date: item.expiration_date,
+      expiration_date: shouldShowExpirationDate(item) ? item.expiration_date : null,
     })),
   };
 }
@@ -271,22 +290,37 @@ async function onSubmit() {
       <div
         v-for="(item, index) in state.items"
         :key="item.key"
-        class="grid grid-cols-1 lg:grid-cols-12 gap-3 items-end border border-neutral-200 rounded p-3"
+        class="relative grid grid-cols-1 lg:grid-cols-12 gap-3 items-end border border-neutral-200 rounded p-4 pr-14"
       >
+        <UButton
+          type="button"
+          icon="i-lucide-trash"
+          color="error"
+          variant="ghost"
+          class="absolute right-3 top-3"
+          :disabled="state.items.length === 1"
+          @click="removeItem(index)"
+        />
+
         <UFormField
           :label="$t('purchases.item_type')"
           :name="`items.${index}.item_type`"
-          class="lg:col-span-2"
+          class="lg:col-span-3"
           required
         >
-          <USelect
-            v-model="item.item_type"
-            :items="itemTypeItems"
-            value-key="value"
-            label-key="label"
-            class="w-full"
-            @update:model-value="handleItemTypeChange(item)"
-          />
+          <div class="grid grid-cols-2 gap-2">
+            <UButton
+              v-for="itemType in itemTypeItems"
+              :key="itemType.value"
+              type="button"
+              :variant="item.item_type === itemType.value ? 'solid' : 'outline'"
+              color="neutral"
+              class="justify-center"
+              @click="setItemType(item, itemType.value)"
+            >
+              {{ itemType.label }}
+            </UButton>
+          </div>
         </UFormField>
 
         <UFormField
@@ -352,19 +386,29 @@ async function onSubmit() {
           />
         </UFormField>
 
+        <div v-if="item.item_type === 'product'" class="lg:col-span-2">
+          <p class="text-xs text-neutral-500 mb-2">
+            {{ $t("purchases.expiration_date") }}
+          </p>
+          <UCheckbox
+            v-model="item.has_expiration"
+            :label="$t('purchases.has_expiration')"
+          />
+          <UInput
+            v-if="item.has_expiration"
+            v-model="item.expiration_date"
+            type="date"
+            class="w-full mt-2"
+          />
+        </div>
+
         <UFormField
-          v-if="
-            item.item_type === 'product' || selectedMaterial(item)?.is_perishable
-          "
+          v-else-if="shouldShowExpirationDate(item)"
           :label="$t('purchases.expiration_date')"
           :name="`items.${index}.expiration_date`"
           class="lg:col-span-2"
         >
-          <UInput
-            v-model="item.expiration_date"
-            type="date"
-            class="w-full"
-          />
+          <UInput v-model="item.expiration_date" type="date" class="w-full" />
         </UFormField>
 
         <div v-else class="lg:col-span-2">
@@ -376,24 +420,13 @@ async function onSubmit() {
           </p>
         </div>
 
-        <div class="lg:col-span-2">
+        <div class="lg:col-span-12 flex items-center justify-end gap-3 border-t border-neutral-200 pt-3 mt-1">
           <p class="text-xs text-neutral-500">
             {{ $t("purchases.item_total") }}
           </p>
-          <p class="font-medium">
+          <p class="text-lg font-semibold text-highlighted">
             {{ itemTotal(item) }}
           </p>
-        </div>
-
-        <div class="lg:col-span-1 flex justify-end">
-          <UButton
-            type="button"
-            icon="i-lucide-trash"
-            color="error"
-            variant="ghost"
-            :disabled="state.items.length === 1"
-            @click="removeItem(index)"
-          />
         </div>
       </div>
     </div>

@@ -35,6 +35,23 @@ function quantity(value: string | number | null | undefined, unit?: string): str
   const amount = Number(value ?? 0).toFixed(2);
   return unit ? `${amount} ${unit}` : amount;
 }
+
+function batchStatusColor(status: string): "success" | "warning" | "error" | "neutral" {
+  const statusColors = {
+    available: "success",
+    depleted: "warning",
+    expired: "error",
+  } as const;
+
+  return statusColors[status as keyof typeof statusColors] ?? "neutral";
+}
+
+function batchStatusLabel(status: string): string {
+  const labelKey = `inventory.batch_statuses.${status}`;
+  const translatedLabel = t(labelKey);
+
+  return translatedLabel === labelKey ? status : translatedLabel;
+}
 </script>
 
 <template>
@@ -84,8 +101,8 @@ function quantity(value: string | number | null | undefined, unit?: string): str
     </template>
 
     <template #status-cell="{ row }">
-      <UBadge color="neutral" variant="soft">
-        {{ row.original.status }}
+      <UBadge :color="batchStatusColor(row.original.status)" variant="subtle">
+        {{ batchStatusLabel(row.original.status) }}
       </UBadge>
     </template>
   </SharedLazyLoadedDatatable>

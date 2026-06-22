@@ -171,9 +171,12 @@
     "sale_price": "Sale price",
     "formatted_sale_price": "Formatted price",
     "type": "Type",
+    "product_type": "Product type",
     "is_composed": "Composed from materials",
     "composed": "Composed",
     "simple": "Simple",
+    "composed_help": "This product consumes materials when it is sold.",
+    "simple_help": "This product is purchased and sold directly. Its stock comes from purchases.",
     "available_to_sell": "Available to sell",
     "is_active": "Active",
     "active": "Active",
@@ -212,6 +215,7 @@
     "quantity": "Quantity",
     "unit_cost": "Unit cost",
     "expiration_date": "Expiration date",
+    "has_expiration": "Has expiration",
     "not_perishable": "Not applicable",
     "registered_by": "Registered by",
     "created_batches": "Created batches",
@@ -250,7 +254,6 @@
     "summary": "Summary",
     "alerts": "Alerts",
     "alerts_description": "Review low-stock materials and batches that need attention.",
-    "products": "Simple products",
     "batches": "Batches",
     "batch": "Batch",
     "movements": "Movements",
@@ -274,7 +277,6 @@
     "expiring_batches": "Expiring batches",
     "in_stock": "In stock",
     "no_inventory": "No inventory found.",
-    "no_products": "No simple products found in inventory.",
     "no_batches": "No batches found.",
     "no_movements": "No movements found.",
     "no_low_stock_alerts": "There are no low-stock materials.",
@@ -288,6 +290,11 @@
       "waste": "Waste or loss",
       "expired": "Expiration",
       "sale": "Sale"
+    },
+    "batch_statuses": {
+      "available": "Available",
+      "depleted": "Depleted",
+      "expired": "Expired"
     }
   }
 }

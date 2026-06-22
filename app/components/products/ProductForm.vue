@@ -23,6 +23,8 @@ interface ProductFormComposition {
   unit: string;
 }
 
+type ProductKind = "composed" | "simple";
+
 const props = defineProps<{
   product?: Product;
 }>();
@@ -108,6 +110,21 @@ const state = reactive<{
 
 const materialItems = computed<Material[]>(() => materials.value?.data ?? []);
 const formattedSalePrice = computed<string>(() => formatPeso(state.sale_price));
+const productKind = computed<ProductKind>({
+  get: () => (state.is_composed ? "composed" : "simple"),
+  set: (value) => {
+    state.is_composed = value === "composed";
+  },
+});
+const productKindItems = computed(() => [
+  { label: t("products.composed"), value: "composed" },
+  { label: t("products.simple"), value: "simple" },
+]);
+const productKindHelp = computed<string>(() =>
+  state.is_composed
+    ? t("products.composed_help")
+    : t("products.simple_help")
+);
 
 function selectedMaterial(
   composition: ProductFormComposition
@@ -244,11 +261,17 @@ async function onSubmit() {
       <UCheckbox v-model="state.is_active" :label="$t('products.is_active')" />
     </UFormField>
 
-    <UFormField name="is_composed">
-      <UCheckbox
-        v-model="state.is_composed"
-        :label="$t('products.is_composed')"
+    <UFormField :label="$t('products.product_type')" name="is_composed">
+      <USelect
+        v-model="productKind"
+        :items="productKindItems"
+        value-key="value"
+        label-key="label"
+        class="w-full md:max-w-sm"
       />
+      <p class="text-sm text-muted mt-2">
+        {{ productKindHelp }}
+      </p>
     </UFormField>
 
     <div v-if="state.is_composed" class="space-y-3">
@@ -308,7 +331,7 @@ async function onSubmit() {
           class="lg:col-span-3"
           required
         >
-          <UInput v-model="composition.unit" class="w-full" />
+          <UInput v-model="composition.unit" class="w-full" disabled />
         </UFormField>
 
         <div class="lg:col-span-1 flex justify-end">

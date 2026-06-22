@@ -249,12 +249,6 @@ export default function useAuthenticatedMenu() {
             permissions: PERMISSION.INVENTORY_READ,
           },
           {
-            label: t("inventory.products"),
-            icon: "i-lucide-package",
-            to: "/inventory/products",
-            permissions: PERMISSION.INVENTORY_READ,
-          },
-          {
             label: t("inventory.batches"),
             icon: "i-lucide-package-search",
             to: "/inventory/batches",

@@ -171,9 +171,12 @@
     "sale_price": "Precio de venta",
     "formatted_sale_price": "Precio formateado",
     "type": "Tipo",
+    "product_type": "Tipo de producto",
     "is_composed": "Se compone de materiales",
     "composed": "Compuesto",
     "simple": "Simple",
+    "composed_help": "Este producto descuenta materiales cuando se vende.",
+    "simple_help": "Este producto se compra y se vende directamente. Su stock viene de las compras.",
     "available_to_sell": "Disponible para vender",
     "is_active": "Activo",
     "active": "Activo",
@@ -212,6 +215,7 @@
     "quantity": "Cantidad",
     "unit_cost": "Costo unitario",
     "expiration_date": "Fecha de vencimiento",
+    "has_expiration": "Tiene vencimiento",
     "not_perishable": "No aplica",
     "registered_by": "Registrado por",
     "created_batches": "Lotes creados",
@@ -250,7 +254,6 @@
     "summary": "Resumen",
     "alerts": "Alertas",
     "alerts_description": "Revisa materiales con stock bajo y lotes que requieren atención.",
-    "products": "Productos simples",
     "batches": "Lotes",
     "batch": "Lote",
     "movements": "Movimientos",
@@ -274,7 +277,6 @@
     "expiring_batches": "Lotes por vencer",
     "in_stock": "En stock",
     "no_inventory": "No se encontró inventario.",
-    "no_products": "No se encontraron productos simples en inventario.",
     "no_batches": "No se encontraron lotes.",
     "no_movements": "No se encontraron movimientos.",
     "no_low_stock_alerts": "No hay materiales con stock bajo.",
@@ -288,6 +290,11 @@
       "waste": "Merma o pérdida",
       "expired": "Vencimiento",
       "sale": "Venta"
+    },
+    "batch_statuses": {
+      "available": "Disponible",
+      "depleted": "Agotado",
+      "expired": "Vencido"
     }
   }
 }
