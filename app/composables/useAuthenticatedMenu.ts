@@ -12,8 +12,27 @@ export default function useAuthenticatedMenu() {
       {
         label: t("dashboard.menu_title"),
         icon: "i-lucide-layout-dashboard",
-        to: "/home",
         permissions: PERMISSION.INVENTORY_READ,
+        children: [
+          {
+            label: t("dashboard.overview"),
+            icon: "i-lucide-gauge",
+            to: "/home",
+            permissions: PERMISSION.INVENTORY_READ,
+          },
+          {
+            label: t("dashboard.sales_analysis"),
+            icon: "i-lucide-chart-no-axes-combined",
+            to: "/dashboard/sales",
+            permissions: PERMISSION.INVENTORY_READ,
+          },
+          {
+            label: t("dashboard.purchases_analysis"),
+            icon: "i-lucide-chart-column-increasing",
+            to: "/dashboard/purchases",
+            permissions: PERMISSION.INVENTORY_READ,
+          },
+        ],
       },
       {
         label: t("users.menu_title"),

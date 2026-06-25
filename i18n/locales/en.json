@@ -60,6 +60,14 @@
   },
   "dashboard": {
     "menu_title": "Dashboard",
+    "overview": "Overview",
+    "overview_description": "A quick view of business performance and current status.",
+    "sales_analysis": "Sales analysis",
+    "sales_analysis_description": "Explore revenue, sales volume, and product performance.",
+    "purchases_analysis": "Purchase analysis",
+    "purchases_analysis_description": "Analyze costs, purchasing frequency, and top suppliers.",
+    "detailed_analysis": "Detailed analysis",
+    "detailed_analysis_description": "Open specialized charts and tables for each area.",
     "subtitle": "Main metrics for sales, purchases, and inventory.",
     "period": "Period",
     "start_date": "Start date",
@@ -72,10 +80,17 @@
     "visible_blocks": "{visible} of {total} visible blocks",
     "view_detail": "View detail",
     "sales_by_day": "Sales by day",
+    "purchases_by_day": "Purchases by day",
     "top_products": "Top products",
+    "top_suppliers": "Top suppliers",
+    "daily_detail": "Daily detail",
     "quantity_sold": "{quantity} units sold",
+    "purchases_registered": "{count} purchases registered",
     "no_sales_by_day": "No sales found in this period.",
+    "no_purchases_by_day": "No purchases found in this period.",
     "no_top_products": "No products sold in this period.",
+    "no_top_suppliers": "No suppliers with purchases in this period.",
+    "unknown_supplier": "No supplier",
     "periods": {
       "today": "Today",
       "last_7_days": "Last 7 days",
@@ -95,10 +110,23 @@
       "items_sold": "Items sold",
       "purchases_total": "Total purchases",
       "purchases_count": "Purchases registered",
+      "items_purchased": "Items purchased",
+      "average_ticket": "Average ticket",
+      "average_purchase": "Average purchase",
       "inventory_value": "Inventory value",
       "low_stock_materials": "Low-stock materials",
       "expiring_batches": "Expiring batches",
-      "expired_batches": "Expired batches"
+      "expired_batches": "Expired batches",
+      "inventory_alerts": "Inventory alerts",
+      "registered_count": "{count} records in this period",
+      "low_stock_count": "{count} low-stock materials",
+      "expiration_alert_detail": "{expiring} expiring and {expired} expired"
+    },
+    "table": {
+      "date": "Date",
+      "operations": "Records",
+      "items": "Items",
+      "total": "Total"
     }
   },
   "users": {

@@ -60,6 +60,14 @@
   },
   "dashboard": {
     "menu_title": "Dashboard",
+    "overview": "Resumen general",
+    "overview_description": "Vista rápida del rendimiento y el estado actual del negocio.",
+    "sales_analysis": "Análisis de ventas",
+    "sales_analysis_description": "Explora ingresos, volumen de ventas y rendimiento de productos.",
+    "purchases_analysis": "Análisis de compras",
+    "purchases_analysis_description": "Analiza costos, frecuencia de compra y proveedores principales.",
+    "detailed_analysis": "Análisis detallado",
+    "detailed_analysis_description": "Consulta gráficos y tablas especializados para cada área.",
     "subtitle": "Métricas principales de ventas, compras e inventario.",
     "period": "Periodo",
     "start_date": "Fecha inicial",
@@ -72,10 +80,17 @@
     "visible_blocks": "{visible} de {total} bloques visibles",
     "view_detail": "Ver detalle",
     "sales_by_day": "Ventas por día",
+    "purchases_by_day": "Compras por día",
     "top_products": "Productos más vendidos",
+    "top_suppliers": "Proveedores principales",
+    "daily_detail": "Detalle diario",
     "quantity_sold": "{quantity} unidades vendidas",
+    "purchases_registered": "{count} compras registradas",
     "no_sales_by_day": "No hay ventas en este periodo.",
+    "no_purchases_by_day": "No hay compras en este periodo.",
     "no_top_products": "No hay productos vendidos en este periodo.",
+    "no_top_suppliers": "No hay proveedores con compras en este periodo.",
+    "unknown_supplier": "Sin proveedor",
     "periods": {
       "today": "Hoy",
       "last_7_days": "Últimos 7 días",
@@ -95,10 +110,23 @@
       "items_sold": "Items vendidos",
       "purchases_total": "Compras totales",
       "purchases_count": "Compras registradas",
+      "items_purchased": "Items comprados",
+      "average_ticket": "Ticket promedio",
+      "average_purchase": "Compra promedio",
       "inventory_value": "Valor del inventario",
       "low_stock_materials": "Materiales bajo stock",
       "expiring_batches": "Lotes por vencer",
-      "expired_batches": "Lotes vencidos"
+      "expired_batches": "Lotes vencidos",
+      "inventory_alerts": "Alertas de inventario",
+      "registered_count": "{count} registros en el periodo",
+      "low_stock_count": "{count} materiales con stock bajo",
+      "expiration_alert_detail": "{expiring} por vencer y {expired} vencidos"
+    },
+    "table": {
+      "date": "Fecha",
+      "operations": "Registros",
+      "items": "Items",
+      "total": "Total"
     }
   },
   "users": {

@@ -13,6 +13,7 @@ export interface DashboardSalesMetrics {
 export interface DashboardPurchaseMetrics {
   total: string;
   count: number;
+  items_purchased: number;
 }
 
 export interface DashboardInventoryMetrics {
@@ -29,8 +30,17 @@ export interface DashboardTopProduct {
   total: string;
 }
 
-export interface DashboardSalesByDay {
+export interface DashboardDailyMetric {
   date: string;
+  total: string;
+  count: number;
+  items: string;
+}
+
+export interface DashboardTopSupplier {
+  supplier_id: number | null;
+  supplier_name: string | null;
+  purchases_count: number;
   total: string;
 }
 
@@ -40,7 +50,9 @@ export interface DashboardSummary {
   purchases: DashboardPurchaseMetrics;
   inventory: DashboardInventoryMetrics;
   top_products: DashboardTopProduct[];
-  sales_by_day: DashboardSalesByDay[];
+  sales_by_day: DashboardDailyMetric[];
+  purchases_by_day: DashboardDailyMetric[];
+  top_suppliers: DashboardTopSupplier[];
 }
 
 export interface DashboardSummaryParams {
