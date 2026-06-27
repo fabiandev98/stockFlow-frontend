@@ -4,7 +4,11 @@ import { UserRepository } from "~/repositories/user-repository";
 import type { User } from "~/types/user";
 import type { LaravelPaginationWrapper } from "~/types/pagination";
 import type { Role } from "~/types/role";
-import type { CreateUserPayload, UpdateUserPayload } from "~/types/user-form";
+import type {
+  CreateUserPayload,
+  UpdateUserPasswordPayload,
+  UpdateUserPayload,
+} from "~/types/user-form";
 
 export function useUserModule() {
   const userRepo = new UserRepository();
@@ -34,6 +38,13 @@ export function useUserModule() {
     return await userRepo.updateById(id, data);
   }
 
+  async function updateUserPassword(
+    id: number,
+    data: UpdateUserPasswordPayload
+  ): Promise<{ message: string }> {
+    return await userRepo.updatePasswordById(id, data);
+  }
+
   async function deleteUser(id: number): Promise<null> {
     return await userRepo.deleteById(id);
   }
@@ -47,6 +58,7 @@ export function useUserModule() {
     fetchUser,
     createUser,
     updateUser,
+    updateUserPassword,
     deleteUser,
     fetchCurrentUserRolesBelow,
   };

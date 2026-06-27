@@ -10,9 +10,11 @@ import {
 } from "#imports";
 import { PERMISSION } from "~/constants/permissions";
 import UserForm from "~/components/user/UserForm.vue";
+import UserPasswordForm from "~/components/user/UserPasswordForm.vue";
 import { HTTP_STATUS } from "~/constants/http-statuses";
 import type { User } from "~/types/user";
 import useAuthStore from "~/stores/auth-store";
+import { FetchError } from "ofetch";
 
 definePageMeta({
   middleware: ["auth-guard"],
@@ -45,15 +47,60 @@ async function handleSubmit(user: User) {
     }),
   });
 }
+
+function handlePasswordSubmit() {
+  toast.add({
+    color: "success",
+    title: t("auth.update_password_submit"),
+    description: t("auth.password_updated_success"),
+  });
+}
+
+function handlePasswordError(error: unknown) {
+  if (error instanceof FetchError) {
+    if (error.statusCode === HTTP_STATUS.UNPROCESSABLE_CONTENT) {
+      return;
+    }
+
+    const context = `${error.statusCode} - ${error.data?.message ?? error.message}`;
+
+    toast.add({
+      color: "error",
+      title: t("common.generic_error_title"),
+      description: t("common.generic_error", { context }),
+    });
+    return;
+  }
+
+  toast.add({
+    color: "error",
+    title: t("common.generic_error_title"),
+    description: t("common.generic_unknown_error"),
+  });
+}
 </script>
 
 <template>
-  <UserForm
-    mode="edit"
-    :user="user"
-    :show-role-field="false"
-    @submit-success="handleSubmit"
-  />
+  <div class="space-y-8">
+    <UserForm
+      mode="edit"
+      :user="user"
+      :show-role-field="false"
+      @submit-success="handleSubmit"
+    />
+
+    <div>
+      <h2 class="text-lg font-medium mb-3">
+        {{ $t("auth.update_password_submit") }}
+      </h2>
+      <UserPasswordForm
+        :user-id="user.id"
+        :require-current-password="true"
+        @submit-success="handlePasswordSubmit"
+        @submit-error="handlePasswordError"
+      />
+    </div>
+  </div>
 </template>
 
 <style scoped></style>

@@ -21,3 +21,9 @@ export interface UpdateUserPayload {
   email: string;
   role_id?: number;
 }
+
+export interface UpdateUserPasswordPayload {
+  current_password?: string;
+  password: string;
+  password_confirmation: string;
+}

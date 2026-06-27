@@ -2,7 +2,11 @@ import { Repository } from "./repository";
 import type { User } from "~/types/user";
 import type { LaravelPaginationWrapper } from "~/types/pagination";
 import type { Role } from "~/types/role";
-import type { CreateUserPayload, UpdateUserPayload } from "~/types/user-form";
+import type {
+  CreateUserPayload,
+  UpdateUserPasswordPayload,
+  UpdateUserPayload,
+} from "~/types/user-form";
 
 const BASE_ENDPOINT_URL = "/users";
 
@@ -34,6 +38,16 @@ export class UserRepository extends Repository {
       method: "PATCH",
       body: data,
     });
+  }
+
+  updatePasswordById(id: number, data: UpdateUserPasswordPayload) {
+    return this.api<{ message: string }>(
+      `${BASE_ENDPOINT_URL}/${id}/password`,
+      {
+        method: "PATCH",
+        body: data,
+      }
+    );
   }
 
   deleteById(id: number) {
