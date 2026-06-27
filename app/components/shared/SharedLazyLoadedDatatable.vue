@@ -1,4 +1,4 @@
-<script setup lang="ts" generic="T extends Record<string, any>">
+<script setup lang="ts" generic="T extends object">
 import {
   computed,
   createError,
@@ -11,7 +11,7 @@ import {
 import type { TableColumn, TableRow } from "@nuxt/ui";
 import { HTTP_STATUS } from "~/constants/http-statuses";
 import type { LaravelPaginationWrapper } from "~/types/pagination";
-import { h, ref } from "vue";
+import { h, ref, watch } from "vue";
 import { UButton } from "#components";
 
 interface Props {
@@ -24,21 +24,119 @@ interface Props {
   dataKey: string;
   emptyMessage: string;
   expandable?: boolean;
+  isExpandableRow?: (row: T) => boolean;
   globalFilterEnabled?: boolean;
 }
 
 const props = defineProps<Props>();
 
+type SortDirection = false | "asc" | "desc";
+
+interface SortableColumnApi {
+  getIsSorted: () => SortDirection;
+  toggleSorting: (desc: boolean) => void;
+}
+
+function isSortableColumnApi(value: unknown): value is SortableColumnApi {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "getIsSorted" in value &&
+    typeof value.getIsSorted === "function" &&
+    "toggleSorting" in value &&
+    typeof value.toggleSorting === "function"
+  );
+}
+
 const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const { parseQueryString } = useQueryBuilder();
+const expanded = ref({});
 
-// Initialize global filter from URL query params
+/**
+ * Global filter
+ */
 const globalFilter = ref<string>(
   (route.query["filter[global]"] as string) || ""
 );
 
+function updateGlobalFilter(value: string): void {
+  globalFilter.value = value;
+
+  const query = { ...route.query };
+
+  if (value) {
+    query["filter[global]"] = value;
+  } else {
+    delete query["filter[global]"];
+  }
+
+  // Reset to page 1 when filtering
+  delete query.page;
+
+  router.push({ query });
+}
+
+/**
+ * Sorting
+ */
+const initialSortParam = route.query.sort as string | undefined;
+const sorting = ref<Array<{ id: string; desc: boolean }>>(
+  initialSortParam
+    ? [
+        {
+          id: initialSortParam.startsWith("-")
+            ? initialSortParam.slice(1)
+            : initialSortParam,
+          desc: initialSortParam.startsWith("-"),
+        },
+      ]
+    : []
+);
+
+watch(
+  sorting,
+  (value) => {
+    const query = { ...route.query };
+
+    if (!value.length) {
+      delete query.sort;
+    } else {
+      const sortItem = value[0];
+      if (sortItem) {
+        const { id, desc } = sortItem;
+        query.sort = `${desc ? "-" : ""}${id}`;
+      }
+    }
+
+    delete query.page;
+    router.push({ query });
+  },
+  { deep: true }
+);
+
+function sortableHeader(column: unknown, label: string) {
+  if (!isSortableColumnApi(column)) return label;
+
+  const sorted = column.getIsSorted();
+
+  return h(UButton, {
+    variant: "ghost",
+    label,
+    class: "-mx-2",
+    icon: sorted
+      ? sorted === "asc"
+        ? "i-lucide-arrow-up"
+        : "i-lucide-arrow-down"
+      : "i-lucide-arrow-up-down",
+    onClick: () => column.toggleSorting(sorted !== "desc"),
+  });
+}
+
+/**
+ * Query params
+ */
 const queryParams = computed<{
   page?: number;
   filters?: Record<string, string | number | boolean>;
@@ -57,6 +155,9 @@ const queryParams = computed<{
   return params;
 });
 
+/**
+ * Data fetching
+ */
 const { data, pending, error, refresh } = await useAsyncData<
   LaravelPaginationWrapper<T>
 >(props.dataKey, () => props.fetchFunction(queryParams.value), {
@@ -70,10 +171,12 @@ if (error.value || data.value === null) {
     message: t("common.generic_error", {
       context: error.value?.message ?? "",
     }),
-    fatal: true,
   });
 }
 
+/**
+ * Pagination
+ */
 const currentPage = computed<number>(() => data.value?.meta.current_page ?? 1);
 const totalPages = computed<number>(() => data.value?.meta.last_page ?? 1);
 
@@ -86,48 +189,52 @@ function goToPage(page: number): void {
   });
 }
 
-const expanded = ref({});
-const computedColumns = computed<TableColumn<T>[]>(() => {
-  const cols = [...props.columns];
+/**
+ * Column normalization - add sorting capabilities if enabled
+ */
+const computedColumns = computed(() => {
+  const cols = props.columns.map((col) => {
+    if (col.enableSorting !== true) return col;
+    if (!("accessorKey" in col) || !col.accessorKey) return col;
+
+    return {
+      ...col,
+      header:
+        typeof col.header === "function"
+          ? col.header
+          : ({ column }: { column: unknown }) =>
+              sortableHeader(column, String(col.header ?? col.accessorKey)),
+    };
+  });
+
   if (props.expandable) {
     cols.unshift({
       id: "expand",
-      cell: ({ row }: { row: TableRow<T> }) =>
-        h(UButton, {
+      cell: ({ row }: { row: TableRow<T> }) => {
+        const isExpandable =
+          !props.isExpandableRow || props.isExpandableRow(row.original);
+
+        if (!isExpandable) return null;
+
+        return h(UButton, {
           color: "neutral",
           variant: "ghost",
           icon: "i-lucide-chevron-down",
           square: true,
-          "aria-label": "Expand",
+          onClick: () => row.toggleExpanded(),
           ui: {
             leadingIcon: [
               "transition-transform",
               row.getIsExpanded() ? "duration-200 rotate-180" : "",
             ],
           },
-          onClick: () => row.toggleExpanded(),
-        } as never),
+        } as never);
+      },
     } as never);
   }
+
   return cols;
 });
-
-function updateGlobalFilter(value: string): void {
-  globalFilter.value = value;
-
-  const query = { ...route.query };
-
-  if (value) {
-    query["filter[global]"] = value;
-  } else {
-    delete query["filter[global]"];
-  }
-
-  // Reset to page 1 when filtering
-  delete query.page;
-
-  router.push({ query });
-}
 </script>
 
 <template>
@@ -140,7 +247,7 @@ function updateGlobalFilter(value: string): void {
       <UInput
         v-if="globalFilterEnabled"
         :model-value="globalFilter"
-        class="w-full md:w-[400px]"
+        class="w-full md:w-100"
         :placeholder="t('common.filter')"
         @update:model-value="updateGlobalFilter"
       />
@@ -148,6 +255,7 @@ function updateGlobalFilter(value: string): void {
     <UTable
       :key="currentPage"
       v-model:expanded="expanded"
+      v-model:sorting="sorting"
       :columns="computedColumns"
       :data="data?.data ?? []"
       :loading="pending"
@@ -161,7 +269,7 @@ function updateGlobalFilter(value: string): void {
 
       <!-- Expandable row content -->
       <template v-if="expandable" #expanded="{ row }">
-        <slot name="expanded" :row="row" />
+        <slot name="expanded" :row="row" :refresh="refresh" />
       </template>
 
       <!-- Pass all slots dynamicly -->
