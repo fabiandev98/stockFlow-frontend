@@ -55,6 +55,8 @@ const schema = z.object({
   name: z.string().min(2),
   sale_price: z.number().min(0),
   is_composed: z.boolean(),
+  production_mode: z.enum(["on_sale", "batch"]),
+  shelf_life_days: z.number().int().min(0).nullable(),
   is_active: z.boolean(),
   compositions: z.array(
     z.object({
@@ -90,6 +92,8 @@ const state = reactive<{
   name: string;
   sale_price: number;
   is_composed: boolean;
+  production_mode: "on_sale" | "batch";
+  shelf_life_days: number | null;
   is_active: boolean;
   compositions: ProductFormComposition[];
 }>({
@@ -97,6 +101,8 @@ const state = reactive<{
   name: props.product?.name ?? "",
   sale_price: Number(props.product?.sale_price ?? 0),
   is_composed: props.product?.is_composed ?? true,
+  production_mode: props.product?.production_mode ?? "on_sale",
+  shelf_life_days: props.product?.shelf_life_days ?? null,
   is_active: props.product?.is_active ?? true,
   compositions:
     props.product?.compositions?.map((composition) =>
@@ -119,6 +125,10 @@ const productKind = computed<ProductKind>({
 const productKindItems = computed(() => [
   { label: t("products.composed"), value: "composed" },
   { label: t("products.simple"), value: "simple" },
+]);
+const productionModeItems = computed(() => [
+  { label: t("products.production_on_sale"), value: "on_sale" },
+  { label: t("products.production_by_batch"), value: "batch" },
 ]);
 const productKindHelp = computed<string>(() =>
   state.is_composed
@@ -156,6 +166,8 @@ function payloadFromState(): ProductPayload {
     name: state.name,
     sale_price: state.sale_price,
     is_composed: state.is_composed,
+    production_mode: state.is_composed ? state.production_mode : "on_sale",
+    shelf_life_days: state.is_composed && state.production_mode === "batch" ? state.shelf_life_days : null,
     is_active: state.is_active,
     compositions: state.is_composed
       ? state.compositions.map((composition) => ({
@@ -195,6 +207,8 @@ async function onSubmit() {
         name: "",
         sale_price: 0,
         is_composed: true,
+        production_mode: "on_sale",
+        shelf_life_days: null,
         is_active: true,
         compositions: [createComposition()],
       });
@@ -221,7 +235,14 @@ async function onSubmit() {
 <template>
   <UForm :schema="schema" :state="state" class="space-y-5" @submit="onSubmit">
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <UFormField :label="$t('products.name')" name="name" required>
+      <UFormField name="name">
+        <template #label>
+          <SharedFormFieldLabel
+            :label="$t('products.name')"
+            :hint="$t('products.hints.name')"
+            required
+          />
+        </template>
         <UInput v-model="state.name" class="w-full" />
       </UFormField>
 
@@ -237,7 +258,14 @@ async function onSubmit() {
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
-      <UFormField :label="$t('products.sale_price')" name="sale_price" required>
+      <UFormField name="sale_price">
+        <template #label>
+          <SharedFormFieldLabel
+            :label="$t('products.sale_price')"
+            :hint="$t('products.hints.sale_price')"
+            required
+          />
+        </template>
         <UInput
           v-model.number="state.sale_price"
           type="number"
@@ -261,7 +289,13 @@ async function onSubmit() {
       <UCheckbox v-model="state.is_active" :label="$t('products.is_active')" />
     </UFormField>
 
-    <UFormField :label="$t('products.product_type')" name="is_composed">
+    <UFormField name="is_composed">
+      <template #label>
+        <SharedFormFieldLabel
+          :label="$t('products.product_type')"
+          :hint="$t('products.hints.product_type')"
+        />
+      </template>
       <USelect
         v-model="productKind"
         :items="productKindItems"
@@ -275,6 +309,14 @@ async function onSubmit() {
     </UFormField>
 
     <div v-if="state.is_composed" class="space-y-3">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 rounded border border-neutral-200 p-3">
+        <UFormField :label="$t('products.production_mode')" name="production_mode">
+          <USelect v-model="state.production_mode" :items="productionModeItems" value-key="value" label-key="label" class="w-full" />
+        </UFormField>
+        <UFormField v-if="state.production_mode === 'batch'" :label="$t('products.shelf_life_days')" name="shelf_life_days">
+          <UInput v-model.number="state.shelf_life_days" type="number" min="0" step="1" class="w-full" />
+        </UFormField>
+      </div>
       <div class="flex items-center justify-between gap-3">
         <h2 class="text-base font-medium">
           {{ $t("products.compositions") }}
@@ -295,11 +337,16 @@ async function onSubmit() {
         class="grid grid-cols-1 lg:grid-cols-12 gap-3 items-end border border-neutral-200 rounded p-3"
       >
         <UFormField
-          :label="$t('products.material')"
           :name="`compositions.${index}.material_id`"
           class="lg:col-span-5"
-          required
         >
+          <template #label>
+            <SharedFormFieldLabel
+              :label="$t('products.material')"
+              :hint="$t('products.hints.composition_material')"
+              required
+            />
+          </template>
           <USelect
             v-model="composition.material_id"
             :items="materialItems"
@@ -311,11 +358,16 @@ async function onSubmit() {
         </UFormField>
 
         <UFormField
-          :label="$t('products.quantity_required')"
           :name="`compositions.${index}.quantity_required`"
           class="lg:col-span-3"
-          required
         >
+          <template #label>
+            <SharedFormFieldLabel
+              :label="$t('products.quantity_required')"
+              :hint="$t('products.hints.quantity_required')"
+              required
+            />
+          </template>
           <UInput
             v-model.number="composition.quantity_required"
             type="number"

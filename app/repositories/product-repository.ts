@@ -1,5 +1,5 @@
 import { Repository } from "./repository";
-import type { Product, ProductPayload } from "~/types/product";
+import type { Product, ProductPayload, ProductProduction, ProductProductionPayload } from "~/types/product";
 import type { LaravelPaginationWrapper } from "~/types/pagination";
 
 const BASE_ENDPOINT_URL = "/products";
@@ -37,6 +37,13 @@ export class ProductRepository extends Repository {
   findById(id: number) {
     return this.api<Product>(`${BASE_ENDPOINT_URL}/${id}`, {
       method: "GET",
+    });
+  }
+
+  createProduction(id: number, payload: ProductProductionPayload) {
+    return this.api<ProductProduction>(`${BASE_ENDPOINT_URL}/${id}/productions`, {
+      method: "POST",
+      body: payload,
     });
   }
 }

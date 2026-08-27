@@ -1,5 +1,5 @@
 import { ProductRepository } from "~/repositories/product-repository";
-import type { Product, ProductPayload } from "~/types/product";
+import type { Product, ProductPayload, ProductProduction, ProductProductionPayload } from "~/types/product";
 import type { LaravelPaginationWrapper } from "~/types/pagination";
 import { useQueryBuilder } from "#imports";
 
@@ -35,11 +35,16 @@ export function useProductModule() {
     return await productRepo.findById(id);
   }
 
+  async function createProductProduction(id: number, payload: ProductProductionPayload): Promise<ProductProduction> {
+    return await productRepo.createProduction(id, payload);
+  }
+
   return {
     fetchProducts,
     createProduct,
     updateProduct,
     deleteProduct,
     fetchProductById,
+    createProductProduction,
   };
 }
