@@ -88,6 +88,8 @@
     "top_products": "Top products",
     "top_suppliers": "Top suppliers",
     "daily_detail": "Daily detail",
+    "profitability": "Profitability",
+    "profitability_description": "Net sales, cost of goods sold, gross profit, and registered waste for the selected period.",
     "quantity_sold": "{quantity} units sold",
     "purchases_registered": "{count} purchases registered",
     "no_sales_by_day": "No sales found in this period.",
@@ -117,6 +119,13 @@
       "items_purchased": "Items purchased",
       "average_ticket": "Average ticket",
       "average_purchase": "Average purchase",
+      "net_sales": "Net sales",
+      "cogs": "Cost of goods sold",
+      "gross_profit": "Gross profit",
+      "food_cost": "Food cost",
+      "actual_food_cost": "Actual food cost",
+      "waste_cost": "Waste cost",
+      "adjusted_gross_profit": "Gross profit after waste",
       "inventory_value": "Inventory value",
       "low_stock_materials": "Low-stock materials",
       "expiring_batches": "Expiring batches",
@@ -167,6 +176,12 @@
     "is_perishable": "Perishable",
     "default_expiration_days": "Default expiration days",
     "no_materials": "No materials found.",
+    "hints": {
+      "name": "Use a clear material name for purchases and inventory.",
+      "unit": "Base unit used to track stock and consumption.",
+      "minimum_stock": "Quantity that marks this material as low stock.",
+      "default_expiration_days": "Suggested expiration window when purchasing this material."
+    },
     "units": {
       "g": "g - grams",
       "kg": "kg - kilograms",
@@ -204,6 +219,21 @@
     "formatted_sale_price": "Formatted price",
     "type": "Type",
     "product_type": "Product type",
+    "production_mode": "Preparation mode",
+    "production_on_sale": "Prepare when sold",
+    "production_by_batch": "Produce by batch",
+    "shelf_life_days": "Shelf life (days)",
+    "produce": "Produce",
+    "register_production": "Register production",
+    "production_recipe_hint": "The recipe is a guide. Adjust the materials and quantities actually used for this batch.",
+    "planned_quantity": "Planned quantity",
+    "produced_quantity": "Produced quantity",
+    "production_date": "Production date",
+    "real_materials": "Materials actually used",
+    "add_material": "Add material",
+    "expiration_date": "Expiration date",
+    "expiration_override_reason": "Reason for overriding expiration",
+    "production_created": "Production batch registered successfully.",
     "is_composed": "Composed from materials",
     "composed": "Composed",
     "simple": "Simple",
@@ -219,7 +249,14 @@
     "material": "Material",
     "quantity_required": "Required quantity",
     "unit": "Unit",
-    "no_products": "No products found."
+    "no_products": "No products found.",
+    "hints": {
+      "name": "Name shown in sales, purchases, and reports.",
+      "sale_price": "Default price used when registering sales.",
+      "product_type": "Simple products are bought directly; composed products consume materials.",
+      "composition_material": "Material consumed when this product is sold.",
+      "quantity_required": "Amount of material needed to produce one unit of this product."
+    }
   },
   "suppliers": {
     "menu_title": "Suppliers",
@@ -261,6 +298,14 @@
     "item_types": {
       "material": "Material",
       "product": "Simple product"
+    },
+    "hints": {
+      "purchase_date": "Date when the purchase is received or registered.",
+      "item_type": "Choose whether this line adds material stock or simple product stock.",
+      "material": "Material that will create a stock batch.",
+      "product": "Simple product that will create product stock.",
+      "quantity": "Amount purchased for this item.",
+      "unit_cost": "Cost for each unit purchased."
     }
   },
   "sales": {
@@ -268,6 +313,7 @@
     "index": "Sale list",
     "resource_name": "Sale",
     "sale_date": "Sale date",
+    "covers": "Covers",
     "registered_by": "Registered by",
     "notes": "Notes",
     "items": "Sale items",
@@ -277,11 +323,33 @@
     "quantity": "Quantity",
     "unit_price": "Unit price",
     "item_total": "Item total",
+    "subtotal_amount": "Subtotal",
+    "discount_amount": "Discount",
+    "tax_rate": "Tax (%)",
+    "tax_amount": "Tax",
+    "tax_amount_with_rate": "Tax ({rate}%)",
     "total_amount": "Sale total",
     "inventory_movements": "Inventory movements",
     "quantity_exceeds_available": "Some products exceed the available stock.",
     "quantity_exceeds_available_with_quantity": "Selected: {selected}. Available: {available}",
-    "no_sales": "No sales found."
+    "discount_exceeds_subtotal": "The discount cannot exceed the subtotal.",
+    "cancel": "Cancel sale",
+    "cancel_sale": "Cancel sale",
+    "cancelled": "Cancelled sale",
+    "cancelled_at": "Cancelled on {date}",
+    "cancelled_success": "The sale was cancelled and its inventory was restored.",
+    "cancellation_reason": "Cancellation reason",
+    "cancellation_hint": "This action restores the original inventory lots and cannot be undone.",
+    "confirm_cancellation": "Confirm cancellation",
+    "no_sales": "No sales found.",
+    "hints": {
+      "sale_date": "Date when the sale is registered.",
+      "covers": "Optional number of guests associated with the sale.",
+      "discount_amount": "Monetary amount deducted before tax is calculated.",
+      "tax_rate": "Percentage applied after the discount.",
+      "product": "Product to sell. Already selected products are hidden.",
+      "quantity": "Amount to sell. It cannot exceed available stock."
+    }
   },
   "inventory": {
     "menu_title": "Inventory",

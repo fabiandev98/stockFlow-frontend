@@ -88,6 +88,8 @@
     "top_products": "Productos más vendidos",
     "top_suppliers": "Proveedores principales",
     "daily_detail": "Detalle diario",
+    "profitability": "Rentabilidad",
+    "profitability_description": "Ventas netas, costo de ventas, utilidad bruta y mermas registradas del periodo seleccionado.",
     "quantity_sold": "{quantity} unidades vendidas",
     "purchases_registered": "{count} compras registradas",
     "no_sales_by_day": "No hay ventas en este periodo.",
@@ -117,6 +119,13 @@
       "items_purchased": "Items comprados",
       "average_ticket": "Ticket promedio",
       "average_purchase": "Compra promedio",
+      "net_sales": "Ventas netas",
+      "cogs": "Costo de ventas",
+      "gross_profit": "Utilidad bruta",
+      "food_cost": "Costo de alimentos",
+      "actual_food_cost": "Costo real de alimentos",
+      "waste_cost": "Costo de mermas",
+      "adjusted_gross_profit": "Utilidad después de mermas",
       "inventory_value": "Valor del inventario",
       "low_stock_materials": "Materiales bajo stock",
       "expiring_batches": "Lotes por vencer",
@@ -167,6 +176,12 @@
     "is_perishable": "Perecedero",
     "default_expiration_days": "Dias de vencimiento por defecto",
     "no_materials": "No se encontraron materiales.",
+    "hints": {
+      "name": "Usa un nombre claro para compras e inventario.",
+      "unit": "Unidad base para controlar stock y consumo.",
+      "minimum_stock": "Cantidad desde la que el material se considera bajo stock.",
+      "default_expiration_days": "Vencimiento sugerido al comprar este material."
+    },
     "units": {
       "g": "g - gramos",
       "kg": "kg - kilogramos",
@@ -204,6 +219,21 @@
     "formatted_sale_price": "Precio formateado",
     "type": "Tipo",
     "product_type": "Tipo de producto",
+    "production_mode": "Modo de preparación",
+    "production_on_sale": "Preparar al vender",
+    "production_by_batch": "Producir por lotes",
+    "shelf_life_days": "Vida útil (días)",
+    "produce": "Producir",
+    "register_production": "Registrar producción",
+    "production_recipe_hint": "La receta es una guía. Ajusta los materiales y las cantidades realmente usadas en este lote.",
+    "planned_quantity": "Cantidad planeada",
+    "produced_quantity": "Cantidad producida",
+    "production_date": "Fecha de producción",
+    "real_materials": "Materiales realmente usados",
+    "add_material": "Agregar material",
+    "expiration_date": "Fecha de vencimiento",
+    "expiration_override_reason": "Motivo para modificar el vencimiento",
+    "production_created": "Lote de producción registrado correctamente.",
     "is_composed": "Se compone de materiales",
     "composed": "Compuesto",
     "simple": "Simple",
@@ -219,7 +249,14 @@
     "material": "Material",
     "quantity_required": "Cantidad requerida",
     "unit": "Unidad",
-    "no_products": "No se encontraron productos."
+    "no_products": "No se encontraron productos.",
+    "hints": {
+      "name": "Nombre visible en ventas, compras y reportes.",
+      "sale_price": "Precio por defecto al registrar ventas.",
+      "product_type": "Simple se compra directo; compuesto consume materiales.",
+      "composition_material": "Material que se descuenta cuando se vende este producto.",
+      "quantity_required": "Cantidad de material necesaria para producir una unidad."
+    }
   },
   "suppliers": {
     "menu_title": "Proveedores",
@@ -261,6 +298,14 @@
     "item_types": {
       "material": "Material",
       "product": "Producto simple"
+    },
+    "hints": {
+      "purchase_date": "Fecha en que se recibe o registra la compra.",
+      "item_type": "Define si esta linea aumenta stock de materiales o productos simples.",
+      "material": "Material que generara un lote de stock.",
+      "product": "Producto simple que generara stock de producto.",
+      "quantity": "Cantidad comprada para este item.",
+      "unit_cost": "Costo por cada unidad comprada."
     }
   },
   "sales": {
@@ -268,6 +313,7 @@
     "index": "Lista de ventas",
     "resource_name": "Venta",
     "sale_date": "Fecha de venta",
+    "covers": "Clientes atendidos",
     "registered_by": "Registrado por",
     "notes": "Notas",
     "items": "Items de venta",
@@ -277,11 +323,33 @@
     "quantity": "Cantidad",
     "unit_price": "Precio unitario",
     "item_total": "Total item",
+    "subtotal_amount": "Subtotal",
+    "discount_amount": "Descuento",
+    "tax_rate": "Impuesto (%)",
+    "tax_amount": "Impuesto",
+    "tax_amount_with_rate": "Impuesto ({rate}%)",
     "total_amount": "Total venta",
     "inventory_movements": "Movimientos de inventario",
     "quantity_exceeds_available": "Hay productos con cantidad mayor al stock disponible.",
     "quantity_exceeds_available_with_quantity": "Seleccionado: {selected}. Disponible: {available}",
-    "no_sales": "No se encontraron ventas."
+    "discount_exceeds_subtotal": "El descuento no puede superar el subtotal.",
+    "cancel": "Anular venta",
+    "cancel_sale": "Anular venta",
+    "cancelled": "Venta anulada",
+    "cancelled_at": "Anulada el {date}",
+    "cancelled_success": "La venta fue anulada y se restauró su inventario.",
+    "cancellation_reason": "Motivo de anulación",
+    "cancellation_hint": "Esta acción restaura los lotes originales del inventario y no se puede deshacer.",
+    "confirm_cancellation": "Confirmar anulación",
+    "no_sales": "No se encontraron ventas.",
+    "hints": {
+      "sale_date": "Fecha en que se registra la venta.",
+      "covers": "Número opcional de clientes asociados a la venta.",
+      "discount_amount": "Valor monetario descontado antes de calcular el impuesto.",
+      "tax_rate": "Porcentaje aplicado después del descuento.",
+      "product": "Producto a vender. Los ya seleccionados se ocultan.",
+      "quantity": "Cantidad a vender. No puede superar el stock disponible."
+    }
   },
   "inventory": {
     "menu_title": "Inventario",
