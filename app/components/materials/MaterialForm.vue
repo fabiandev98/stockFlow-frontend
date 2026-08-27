@@ -124,7 +124,14 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
 
 <template>
   <UForm :schema="schema" :state="state" class="space-y-4" @submit="onSubmit">
-    <UFormField :label="$t('materials.name')" name="name" required>
+    <UFormField name="name">
+      <template #label>
+        <SharedFormFieldLabel
+          :label="$t('materials.name')"
+          :hint="$t('materials.hints.name')"
+          required
+        />
+      </template>
       <UInput v-model="state.name" class="w-full" />
     </UFormField>
 
@@ -142,7 +149,14 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
         />
       </UFormField>
 
-      <UFormField :label="$t('materials.unit')" name="unit" required>
+      <UFormField name="unit">
+        <template #label>
+          <SharedFormFieldLabel
+            :label="$t('materials.unit')"
+            :hint="$t('materials.hints.unit')"
+            required
+          />
+        </template>
         <USelect
           v-model="state.unit"
           :items="unitItems"
@@ -154,10 +168,15 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     </div>
 
     <UFormField
-      :label="$t('materials.minimum_stock')"
       name="minimum_stock"
-      required
     >
+      <template #label>
+        <SharedFormFieldLabel
+          :label="$t('materials.minimum_stock')"
+          :hint="$t('materials.hints.minimum_stock')"
+          required
+        />
+      </template>
       <UInput v-model.number="state.minimum_stock" type="number" step="0.01" />
     </UFormField>
 
@@ -170,10 +189,15 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
 
     <UFormField
       v-if="state.is_perishable"
-      :label="$t('materials.default_expiration_days')"
       name="default_expiration_days"
-      required
     >
+      <template #label>
+        <SharedFormFieldLabel
+          :label="$t('materials.default_expiration_days')"
+          :hint="$t('materials.hints.default_expiration_days')"
+          required
+        />
+      </template>
       <UInput
         v-model.number="state.default_expiration_days"
         type="number"

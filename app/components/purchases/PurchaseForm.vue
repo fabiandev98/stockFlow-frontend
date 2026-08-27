@@ -260,10 +260,15 @@ async function onSubmit() {
       </UFormField>
 
       <UFormField
-        :label="$t('purchases.purchase_date')"
         name="purchase_date"
-        required
       >
+        <template #label>
+          <SharedFormFieldLabel
+            :label="$t('purchases.purchase_date')"
+            :hint="$t('purchases.hints.purchase_date')"
+            required
+          />
+        </template>
         <UInput v-model="state.purchase_date" type="date" class="w-full" />
       </UFormField>
     </div>
@@ -303,11 +308,16 @@ async function onSubmit() {
         />
 
         <UFormField
-          :label="$t('purchases.item_type')"
           :name="`items.${index}.item_type`"
           class="lg:col-span-3"
-          required
         >
+          <template #label>
+            <SharedFormFieldLabel
+              :label="$t('purchases.item_type')"
+              :hint="$t('purchases.hints.item_type')"
+              required
+            />
+          </template>
           <div class="grid grid-cols-2 gap-2">
             <UButton
               v-for="itemType in itemTypeItems"
@@ -325,11 +335,16 @@ async function onSubmit() {
 
         <UFormField
           v-if="item.item_type === 'material'"
-          :label="$t('purchases.material')"
           :name="`items.${index}.material_id`"
           class="lg:col-span-3"
-          required
         >
+          <template #label>
+            <SharedFormFieldLabel
+              :label="$t('purchases.material')"
+              :hint="$t('purchases.hints.material')"
+              required
+            />
+          </template>
           <USelect
             v-model="item.material_id"
             :items="materialItems"
@@ -342,11 +357,16 @@ async function onSubmit() {
 
         <UFormField
           v-else
-          :label="$t('purchases.product')"
           :name="`items.${index}.product_id`"
           class="lg:col-span-3"
-          required
         >
+          <template #label>
+            <SharedFormFieldLabel
+              :label="$t('purchases.product')"
+              :hint="$t('purchases.hints.product')"
+              required
+            />
+          </template>
           <USelect
             v-model="item.product_id"
             :items="productItems"
@@ -357,11 +377,16 @@ async function onSubmit() {
         </UFormField>
 
         <UFormField
-          :label="$t('purchases.quantity')"
           :name="`items.${index}.quantity`"
           class="lg:col-span-2"
-          required
         >
+          <template #label>
+            <SharedFormFieldLabel
+              :label="$t('purchases.quantity')"
+              :hint="$t('purchases.hints.quantity')"
+              required
+            />
+          </template>
           <UInput
             v-model.number="item.quantity"
             type="number"
@@ -372,11 +397,16 @@ async function onSubmit() {
         </UFormField>
 
         <UFormField
-          :label="$t('purchases.unit_cost')"
           :name="`items.${index}.unit_cost`"
           class="lg:col-span-2"
-          required
         >
+          <template #label>
+            <SharedFormFieldLabel
+              :label="$t('purchases.unit_cost')"
+              :hint="$t('purchases.hints.unit_cost')"
+              required
+            />
+          </template>
           <UInput
             v-model.number="item.unit_cost"
             type="number"

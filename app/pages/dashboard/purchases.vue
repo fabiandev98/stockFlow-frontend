@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref, watch } from "vue";
 import {
   definePageMeta,
   useAsyncData,
@@ -26,6 +26,9 @@ const { data: summary, pending } = await useAsyncData(
   () => fetchSummary(params.value),
   { watch: [params] }
 );
+
+const dailyItemsPerPage = 10;
+const dailyPage = ref(1);
 
 const averagePurchase = computed(() => {
   const count = summary.value?.purchases.count ?? 0;
@@ -68,6 +71,22 @@ const dailyColumns = computed(() => [
   { accessorKey: "items", header: t("dashboard.table.items") },
   { accessorKey: "total", header: t("dashboard.table.total") },
 ]);
+
+const paginatedPurchasesByDay = computed(() => {
+  const start = (dailyPage.value - 1) * dailyItemsPerPage;
+  return (summary.value?.purchases_by_day ?? []).slice(
+    start,
+    start + dailyItemsPerPage
+  );
+});
+
+const purchasesByDayTotal = computed(
+  () => summary.value?.purchases_by_day.length ?? 0
+);
+
+watch(params, () => {
+  dailyPage.value = 1;
+});
 
 function metricWidth(value: string | number, max: number): string {
   return `${Math.max(3, (Number(value) / max) * 100)}%`;
@@ -179,7 +198,7 @@ function metricWidth(value: string | number, max: number): string {
             </h2>
           </template>
 
-          <UTable :data="summary.purchases_by_day" :columns="dailyColumns">
+          <UTable :data="paginatedPurchasesByDay" :columns="dailyColumns">
             <template #date-cell="{ row }">
               {{ formatDisplayDate(row.original.date) }}
             </template>
@@ -192,6 +211,16 @@ function metricWidth(value: string | number, max: number): string {
               </span>
             </template>
           </UTable>
+
+          <template v-if="purchasesByDayTotal > dailyItemsPerPage" #footer>
+            <div class="flex justify-end">
+              <UPagination
+                v-model:page="dailyPage"
+                :items-per-page="dailyItemsPerPage"
+                :total="purchasesByDayTotal"
+              />
+            </div>
+          </template>
         </UCard>
       </section>
     </template>
