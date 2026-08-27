@@ -24,9 +24,14 @@ export function useSaleModule() {
     return await saleRepo.findById(id);
   }
 
+  async function cancelSale(id: number, reason: string): Promise<Sale> {
+    return await saleRepo.cancel(id, { reason });
+  }
+
   return {
     fetchSales,
     createSale,
     fetchSaleById,
+    cancelSale,
   };
 }

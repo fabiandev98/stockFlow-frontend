@@ -41,6 +41,7 @@ export const PERMISSION = {
 
   SALES_CREATE: "sales-create",
   SALES_READ: "sales-read",
+  SALES_CANCEL: "sales-cancel",
 
   STOCK_BATCHES_READ: "stock-batches-read",
 

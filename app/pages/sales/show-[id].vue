@@ -3,12 +3,16 @@ import {
   computed,
   createError,
   definePageMeta,
+  ref,
   useAsyncData,
+  useAccessControl,
   useI18n,
   useLocalePath,
   useRoute,
   useSaleModule,
+  useToast,
 } from "#imports";
+import { FetchError } from "ofetch";
 import { HTTP_STATUS } from "~/constants/http-statuses";
 import { PERMISSION } from "~/constants/permissions";
 import { formatPeso } from "~/utils/currency-format";
@@ -22,11 +26,17 @@ definePageMeta({
 const { t } = useI18n();
 const lp = useLocalePath();
 const route = useRoute();
-const { fetchSaleById } = useSaleModule();
+const toast = useToast();
+const { fetchSaleById, cancelSale } = useSaleModule();
+const { userCan } = useAccessControl([PERMISSION.SALES_CANCEL]);
 
-const { data, error } = await useAsyncData(() =>
+const { data, error, refresh } = await useAsyncData(() =>
   fetchSaleById(Number(route.params.id))
 );
+
+const isCancelling = ref(false);
+const isCancellationFormVisible = ref(false);
+const cancellationReason = ref("");
 
 if (error.value || data.value === null) {
   throw createError({
@@ -47,6 +57,29 @@ function quantity(
   const amount = Number(value ?? 0).toFixed(2);
   return unit ? `${amount} ${unit}` : amount;
 }
+
+async function handleCancel(): Promise<void> {
+  if (!data.value || isCancelling.value || cancellationReason.value.trim().length < 3) return;
+
+  isCancelling.value = true;
+  try {
+    await cancelSale(data.value.id, cancellationReason.value.trim());
+    await refresh();
+    isCancellationFormVisible.value = false;
+    toast.add({ title: t("sales.cancelled_success"), color: "success" });
+  } catch (error: unknown) {
+    toast.add({
+      title: t("common.generic_error_title"),
+      description:
+        error instanceof FetchError
+          ? error.data?.message ?? error.message
+          : t("common.generic_unknown_error"),
+      color: "error",
+    });
+  } finally {
+    isCancelling.value = false;
+  }
+}
 </script>
 
 <template>
@@ -61,18 +94,69 @@ function quantity(
         </p>
       </div>
 
-      <UButton icon="i-lucide-arrow-left" color="neutral" :to="lp('/sales')">
-        {{ $t("common.back") }}
-      </UButton>
+      <div class="flex gap-2">
+        <UButton
+          v-if="data.status === 'completed' && userCan(PERMISSION.SALES_CANCEL)"
+          icon="i-lucide-ban"
+          color="error"
+          variant="soft"
+          @click="isCancellationFormVisible = true"
+        >
+          {{ $t("sales.cancel") }}
+        </UButton>
+        <UButton icon="i-lucide-arrow-left" color="neutral" :to="lp('/sales')">
+          {{ $t("common.back") }}
+        </UButton>
+      </div>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div
+      v-if="data.status === 'cancelled'"
+      class="rounded border border-error-200 bg-error-50 p-4 text-error-800"
+    >
+      <p class="font-medium">{{ $t("sales.cancelled") }}</p>
+      <p class="mt-1 text-sm">{{ data.cancellation_reason }}</p>
+      <p v-if="data.cancelled_at" class="mt-2 text-xs">
+        {{ $t("sales.cancelled_at", { date: formatDisplayDate(data.cancelled_at) }) }}
+      </p>
+    </div>
+
+    <UCard v-if="isCancellationFormVisible" class="border border-error-200">
+      <template #header>
+        <h2 class="font-semibold">{{ $t("sales.cancel_sale") }}</h2>
+      </template>
+      <UFormField :label="$t('sales.cancellation_reason')" required>
+        <UTextarea v-model="cancellationReason" class="w-full" :rows="3" />
+      </UFormField>
+      <p class="mt-2 text-xs text-muted">{{ $t("sales.cancellation_hint") }}</p>
+      <template #footer>
+        <div class="flex justify-end gap-2">
+          <UButton color="neutral" variant="outline" @click="isCancellationFormVisible = false">
+            {{ $t("common.cancel") }}
+          </UButton>
+          <UButton color="error" :loading="isCancelling" @click="handleCancel">
+            {{ $t("sales.confirm_cancellation") }}
+          </UButton>
+        </div>
+      </template>
+    </UCard>
+
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
       <div class="border border-neutral-200 rounded p-4">
         <p class="text-xs text-neutral-500">
           {{ $t("sales.registered_by") }}
         </p>
         <p class="font-medium">
           {{ data.user?.name ?? "-" }}
+        </p>
+      </div>
+
+      <div class="border border-neutral-200 rounded p-4">
+        <p class="text-xs text-neutral-500">
+          {{ $t("sales.covers") }}
+        </p>
+        <p class="font-medium">
+          {{ data.covers ?? "-" }}
         </p>
       </div>
 
@@ -92,6 +176,27 @@ function quantity(
         <p class="font-medium">
           {{ formatPeso(data.total_amount) }}
         </p>
+      </div>
+    </div>
+
+    <div class="border border-neutral-200 rounded p-4 space-y-2">
+      <div class="flex items-center justify-between text-sm">
+        <span class="text-neutral-500">{{ $t("sales.subtotal_amount") }}</span>
+        <span>{{ formatPeso(data.subtotal_amount) }}</span>
+      </div>
+      <div class="flex items-center justify-between text-sm">
+        <span class="text-neutral-500">{{ $t("sales.discount_amount") }}</span>
+        <span>-{{ formatPeso(data.discount_amount) }}</span>
+      </div>
+      <div class="flex items-center justify-between text-sm">
+        <span class="text-neutral-500">
+          {{ $t("sales.tax_amount_with_rate", { rate: data.tax_rate }) }}
+        </span>
+        <span>{{ formatPeso(data.tax_amount) }}</span>
+      </div>
+      <div class="flex items-center justify-between border-t pt-2">
+        <span class="font-medium">{{ $t("sales.total_amount") }}</span>
+        <span class="text-lg font-semibold">{{ formatPeso(data.total_amount) }}</span>
       </div>
     </div>
 

@@ -39,6 +39,9 @@ const { data: products } = await useAsyncData("sale-form-products", () =>
 
 const schema = z.object({
   sale_date: z.string().min(1),
+  covers: z.number().int().min(1).nullable(),
+  discount_amount: z.number().min(0),
+  tax_rate: z.number().min(0).max(100),
   notes: z.string().nullable(),
   items: z
     .array(
@@ -51,7 +54,10 @@ const schema = z.object({
 });
 
 function today(): string {
-  return new Date().toISOString().slice(0, 10);
+  const now = new Date();
+  const localDate = new Date(now.getTime() - now.getTimezoneOffset() * 60_000);
+
+  return localDate.toISOString().slice(0, 10);
 }
 
 function createItem(item?: Partial<SaleFormItem>): SaleFormItem {
@@ -64,21 +70,37 @@ function createItem(item?: Partial<SaleFormItem>): SaleFormItem {
 
 const state = reactive<{
   sale_date: string;
+  covers: number | null;
+  discount_amount: number;
+  tax_rate: number;
   notes: string | null;
   items: SaleFormItem[];
 }>({
   sale_date: today(),
+  covers: null,
+  discount_amount: 0,
+  tax_rate: 0,
   notes: null,
   items: [createItem()],
 });
 
 const productItems = computed<Product[]>(() => products.value?.data ?? []);
-const totalAmount = computed<number>(() =>
+const subtotalAmount = computed<number>(() =>
   state.items.reduce((total, item) => {
     const product = selectedProduct(item);
     return total + item.quantity * Number(product?.sale_price ?? 0);
   }, 0)
 );
+const discountExceedsSubtotal = computed<boolean>(
+  () => state.discount_amount > subtotalAmount.value
+);
+const taxableAmount = computed<number>(() =>
+  Math.max(0, subtotalAmount.value - state.discount_amount)
+);
+const taxAmount = computed<number>(
+  () => taxableAmount.value * (state.tax_rate / 100)
+);
+const totalAmount = computed<number>(() => taxableAmount.value + taxAmount.value);
 const hasInsufficientStock = computed<boolean>(() =>
   state.items.some((item) => quantityExceedsAvailable(item))
 );
@@ -144,6 +166,9 @@ function nullableText(value: string | null): string | null {
 function payloadFromState(): SalePayload {
   return {
     sale_date: state.sale_date,
+    covers: state.covers,
+    discount_amount: state.discount_amount,
+    tax_rate: state.tax_rate,
     notes: nullableText(state.notes),
     items: state.items.map((item) => ({
       product_id: item.product_id,
@@ -153,10 +178,12 @@ function payloadFromState(): SalePayload {
 }
 
 async function onSubmit() {
-  if (hasInsufficientStock.value) {
+  if (hasInsufficientStock.value || discountExceedsSubtotal.value) {
     toast.add({
       title: t("common.generic_error_title"),
-      description: t("sales.quantity_exceeds_available"),
+      description: discountExceedsSubtotal.value
+        ? t("sales.discount_exceeds_subtotal")
+        : t("sales.quantity_exceeds_available"),
       color: "error",
     });
 
@@ -179,6 +206,9 @@ async function onSubmit() {
 
     Object.assign(state, {
       sale_date: today(),
+      covers: null,
+      discount_amount: 0,
+      tax_rate: 0,
       notes: null,
       items: [createItem()],
     });
@@ -203,9 +233,32 @@ async function onSubmit() {
 
 <template>
   <UForm :schema="schema" :state="state" class="space-y-5" @submit="onSubmit">
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <UFormField :label="$t('sales.sale_date')" name="sale_date" required>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <UFormField name="sale_date">
+        <template #label>
+          <SharedFormFieldLabel
+            :label="$t('sales.sale_date')"
+            :hint="$t('sales.hints.sale_date')"
+            required
+          />
+        </template>
         <UInput v-model="state.sale_date" type="date" class="w-full" />
+      </UFormField>
+
+      <UFormField name="covers">
+        <template #label>
+          <SharedFormFieldLabel
+            :label="$t('sales.covers')"
+            :hint="$t('sales.hints.covers')"
+          />
+        </template>
+        <UInput
+          v-model.number="state.covers"
+          type="number"
+          min="1"
+          step="1"
+          class="w-full"
+        />
       </UFormField>
 
       <UFormField :label="$t('sales.notes')" name="notes">
@@ -244,11 +297,16 @@ async function onSubmit() {
         />
 
         <UFormField
-          :label="$t('sales.product')"
           :name="`items.${index}.product_id`"
           class="lg:col-span-5"
-          required
         >
+          <template #label>
+            <SharedFormFieldLabel
+              :label="$t('sales.product')"
+              :hint="$t('sales.hints.product')"
+              required
+            />
+          </template>
           <USelect
             v-model="item.product_id"
             :items="availableProductItems(item)"
@@ -259,11 +317,16 @@ async function onSubmit() {
         </UFormField>
 
         <UFormField
-          :label="$t('sales.quantity')"
           :name="`items.${index}.quantity`"
           class="lg:col-span-2"
-          required
         >
+          <template #label>
+            <SharedFormFieldLabel
+              :label="$t('sales.quantity')"
+              :hint="$t('sales.hints.quantity')"
+              required
+            />
+          </template>
           <UInput
             v-model.number="item.quantity"
             type="number"
@@ -314,19 +377,68 @@ async function onSubmit() {
       </div>
     </div>
 
-    <div class="flex items-center justify-between border-t pt-4">
-      <p class="text-sm text-neutral-500">
-        {{ $t("sales.total_amount") }}
-      </p>
-      <p class="text-lg font-semibold">
-        {{ formatPeso(totalAmount) }}
-      </p>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 border-t pt-4">
+      <UFormField name="discount_amount">
+        <template #label>
+          <SharedFormFieldLabel
+            :label="$t('sales.discount_amount')"
+            :hint="$t('sales.hints.discount_amount')"
+          />
+        </template>
+        <UInput
+          v-model.number="state.discount_amount"
+          type="number"
+          min="0"
+          step="0.01"
+          class="w-full"
+          :color="discountExceedsSubtotal ? 'error' : 'neutral'"
+        />
+        <p v-if="discountExceedsSubtotal" class="mt-1 text-xs text-error">
+          {{ $t("sales.discount_exceeds_subtotal") }}
+        </p>
+      </UFormField>
+
+      <UFormField name="tax_rate">
+        <template #label>
+          <SharedFormFieldLabel
+            :label="$t('sales.tax_rate')"
+            :hint="$t('sales.hints.tax_rate')"
+          />
+        </template>
+        <UInput
+          v-model.number="state.tax_rate"
+          type="number"
+          min="0"
+          max="100"
+          step="0.01"
+          class="w-full"
+        />
+      </UFormField>
+
+      <div class="md:col-span-2 space-y-2 rounded border border-neutral-200 p-4">
+        <div class="flex items-center justify-between text-sm">
+          <span class="text-neutral-500">{{ $t("sales.subtotal_amount") }}</span>
+          <span>{{ formatPeso(subtotalAmount) }}</span>
+        </div>
+        <div class="flex items-center justify-between text-sm">
+          <span class="text-neutral-500">{{ $t("sales.discount_amount") }}</span>
+          <span>-{{ formatPeso(state.discount_amount) }}</span>
+        </div>
+        <div class="flex items-center justify-between text-sm">
+          <span class="text-neutral-500">{{ $t("sales.tax_amount") }}</span>
+          <span>{{ formatPeso(taxAmount) }}</span>
+        </div>
+        <div class="flex items-center justify-between border-t pt-2">
+          <span class="font-medium">{{ $t("sales.total_amount") }}</span>
+          <span class="text-lg font-semibold">{{ formatPeso(totalAmount) }}</span>
+        </div>
+      </div>
     </div>
 
     <UButton
       type="submit"
       :loading="isSubmitting"
-      :disabled="hasInsufficientStock"
+      :disabled="hasInsufficientStock || discountExceedsSubtotal"
       color="brand"
     >
       {{ $t("common.submit") }}

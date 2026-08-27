@@ -10,8 +10,15 @@ export interface SaleItemPayload {
 
 export interface SalePayload {
   sale_date: string;
+  covers: number | null;
+  discount_amount: number;
+  tax_rate: number;
   notes: string | null;
   items: SaleItemPayload[];
+}
+
+export interface CancelSalePayload {
+  reason: string;
 }
 
 export interface SaleItem {
@@ -37,7 +44,7 @@ export interface ProductStockMovement {
   sale_item_id: number | null;
   user_id: number | null;
   user?: User | null;
-  type: "sale";
+  type: "sale" | "sale_reversal";
   quantity: string;
   reason: string | null;
   movement_date: string;
@@ -50,7 +57,17 @@ export interface Sale {
   user_id: number;
   user?: User;
   sale_date: string;
+  covers: number | null;
+  subtotal_amount: string;
+  discount_amount: string;
+  tax_rate: string;
+  tax_amount: string;
   total_amount: string;
+  status: "completed" | "cancelled";
+  cancelled_at: string | null;
+  cancelled_by_user_id: number | null;
+  cancelled_by?: User | null;
+  cancellation_reason: string | null;
   notes: string | null;
   items_count?: number;
   items?: SaleItem[];
