@@ -10,6 +10,21 @@ export interface DashboardSalesMetrics {
   items_sold: number;
 }
 
+export interface DashboardProfitabilityMetrics {
+  gross_sales: string;
+  discounts: string;
+  net_sales: string;
+  taxes: string;
+  cogs: string;
+  gross_profit: string;
+  food_cost_percentage: string;
+  gross_margin_percentage: string;
+  waste_cost: string;
+  actual_food_cost: string;
+  actual_food_cost_percentage: string;
+  adjusted_gross_profit: string;
+}
+
 export interface DashboardPurchaseMetrics {
   total: string;
   count: number;
@@ -47,6 +62,7 @@ export interface DashboardTopSupplier {
 export interface DashboardSummary {
   period: DashboardPeriod;
   sales: DashboardSalesMetrics;
+  profitability: DashboardProfitabilityMetrics;
   purchases: DashboardPurchaseMetrics;
   inventory: DashboardInventoryMetrics;
   top_products: DashboardTopProduct[];

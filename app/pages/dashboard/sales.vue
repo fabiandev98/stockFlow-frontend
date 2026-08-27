@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref, watch } from "vue";
 import {
   definePageMeta,
   useAsyncData,
@@ -26,6 +26,9 @@ const { data: summary, pending } = await useAsyncData(
   () => fetchSummary(params.value),
   { watch: [params] }
 );
+
+const dailyItemsPerPage = 10;
+const dailyPage = ref(1);
 
 const averageTicket = computed(() => {
   const count = summary.value?.sales.count ?? 0;
@@ -55,6 +58,42 @@ const salesCards = computed(() => [
   },
 ]);
 
+const profitabilityCards = computed(() => [
+  {
+    label: t("dashboard.metrics.net_sales"),
+    value: formatPeso(summary.value?.profitability.net_sales),
+    icon: "i-lucide-wallet-cards",
+  },
+  {
+    label: t("dashboard.metrics.cogs"),
+    value: formatPeso(summary.value?.profitability.cogs),
+    icon: "i-lucide-package-minus",
+  },
+  {
+    label: t("dashboard.metrics.gross_profit"),
+    value: formatPeso(summary.value?.profitability.gross_profit),
+    icon: "i-lucide-chart-no-axes-combined",
+  },
+  {
+    label: t("dashboard.metrics.actual_food_cost"),
+    value: `${Number(summary.value?.profitability.actual_food_cost_percentage ?? 0).toFixed(2)}%`,
+    icon: "i-lucide-percent",
+  },
+]);
+
+const lossCards = computed(() => [
+  {
+    label: t("dashboard.metrics.waste_cost"),
+    value: formatPeso(summary.value?.profitability.waste_cost),
+    icon: "i-lucide-trash-2",
+  },
+  {
+    label: t("dashboard.metrics.adjusted_gross_profit"),
+    value: formatPeso(summary.value?.profitability.adjusted_gross_profit),
+    icon: "i-lucide-chart-no-axes-combined",
+  },
+]);
+
 const maxTopProductQuantity = computed(() =>
   Math.max(
     ...(summary.value?.top_products.map((item) => Number(item.quantity)) ?? []),
@@ -68,6 +107,20 @@ const dailyColumns = computed(() => [
   { accessorKey: "items", header: t("dashboard.table.items") },
   { accessorKey: "total", header: t("dashboard.table.total") },
 ]);
+
+const paginatedSalesByDay = computed(() => {
+  const start = (dailyPage.value - 1) * dailyItemsPerPage;
+  return (summary.value?.sales_by_day ?? []).slice(
+    start,
+    start + dailyItemsPerPage
+  );
+});
+
+const salesByDayTotal = computed(() => summary.value?.sales_by_day.length ?? 0);
+
+watch(params, () => {
+  dailyPage.value = 1;
+});
 
 function metricWidth(value: string | number, max: number): string {
   return `${Math.max(3, (Number(value) / max) * 100)}%`;
@@ -101,6 +154,32 @@ function metricWidth(value: string | number, max: number): string {
       <section class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <DashboardMetricCard
           v-for="card in salesCards"
+          :key="card.label"
+          v-bind="card"
+        />
+      </section>
+
+      <section class="space-y-3">
+        <div>
+          <h2 class="font-semibold text-highlighted">
+            {{ $t("dashboard.profitability") }}
+          </h2>
+          <p class="text-sm text-muted">
+            {{ $t("dashboard.profitability_description") }}
+          </p>
+        </div>
+        <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <DashboardMetricCard
+            v-for="card in profitabilityCards"
+            :key="card.label"
+            v-bind="card"
+          />
+        </div>
+      </section>
+
+      <section class="grid gap-4 md:grid-cols-2">
+        <DashboardMetricCard
+          v-for="card in lossCards"
           :key="card.label"
           v-bind="card"
         />
@@ -176,7 +255,7 @@ function metricWidth(value: string | number, max: number): string {
             </h2>
           </template>
 
-          <UTable :data="summary.sales_by_day" :columns="dailyColumns">
+          <UTable :data="paginatedSalesByDay" :columns="dailyColumns">
             <template #date-cell="{ row }">
               {{ formatDisplayDate(row.original.date) }}
             </template>
@@ -189,6 +268,16 @@ function metricWidth(value: string | number, max: number): string {
               </span>
             </template>
           </UTable>
+
+          <template v-if="salesByDayTotal > dailyItemsPerPage" #footer>
+            <div class="flex justify-end">
+              <UPagination
+                v-model:page="dailyPage"
+                :items-per-page="dailyItemsPerPage"
+                :total="salesByDayTotal"
+              />
+            </div>
+          </template>
         </UCard>
       </section>
     </template>
