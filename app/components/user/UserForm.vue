@@ -203,7 +203,7 @@ async function handleSubmit(
     <UButton
       :loading="isSubmitting"
       type="submit"
-      color="brand"
+      color="primary"
       block
       class="mt-2"
     >

@@ -85,6 +85,12 @@ const analysisLinks = computed(() => [
     icon: "i-lucide-chart-column-increasing",
     to: lp("/dashboard/purchases"),
   },
+  {
+    title: t("reports.title"),
+    description: t("reports.description"),
+    icon: "i-lucide-file-chart-column",
+    to: lp("/dashboard/reports"),
+  },
 ]);
 </script>
 

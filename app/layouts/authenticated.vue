@@ -22,7 +22,7 @@ const { processed } = useAuthenticatedMenu();
               orientation="vertical"
               tooltip
               popover
-              color="brand"
+              color="primary"
             />
           </template>
           <template #footer>

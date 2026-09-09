@@ -138,7 +138,7 @@ async function handleSubmit(event: FormSubmitEvent<Schema>) {
           />
         </UFormField>
 
-        <UButton :loading="isSubmitting" type="submit" color="brand" block>
+        <UButton :loading="isSubmitting" type="submit" color="primary" block>
           {{ $t("auth.reset_password_submit") }}
         </UButton>
       </UForm>

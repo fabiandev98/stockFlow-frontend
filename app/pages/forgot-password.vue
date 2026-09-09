@@ -89,7 +89,7 @@ async function handleSubmit(event: FormSubmitEvent<Schema>) {
         <UButton
           :loading="isSubmitting"
           type="submit"
-          color="brand"
+          color="primary"
           block
         >
           {{ $t("auth.submit") }}

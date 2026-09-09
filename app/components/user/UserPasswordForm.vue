@@ -158,7 +158,7 @@ async function handleSubmit(event: FormSubmitEvent<PasswordFormData>) {
     <UButton
       :loading="isSubmitting"
       type="submit"
-      color="brand"
+      color="primary"
       block
       class="mt-2"
     >

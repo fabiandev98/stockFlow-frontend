@@ -32,6 +32,12 @@ export default function useAuthenticatedMenu() {
             to: "/dashboard/purchases",
             permissions: PERMISSION.INVENTORY_READ,
           },
+          {
+            label: t("reports.title"),
+            icon: "i-lucide-file-chart-column",
+            to: "/dashboard/reports",
+            permissions: PERMISSION.INVENTORY_READ,
+          },
         ],
       },
       {
@@ -177,6 +183,18 @@ export default function useAuthenticatedMenu() {
             permissions: PERMISSION.PRODUCTS_READ,
           },
           {
+            label: t("internal_preparations.title"),
+            icon: "i-lucide-cooking-pot",
+            to: "/internal-preparations",
+            permissions: PERMISSION.PRODUCTS_READ,
+          },
+          {
+            label: t("recipes.title"),
+            icon: "i-lucide-chef-hat",
+            to: "/recipes",
+            permissions: PERMISSION.PRODUCTS_READ,
+          },
+          {
             label: t("product_categories.menu_title"),
             icon: "i-lucide-tags",
             permissions: [
@@ -222,6 +240,12 @@ export default function useAuthenticatedMenu() {
             label: t("purchases.index"),
             icon: "i-lucide-list",
             to: "/purchases",
+            permissions: PERMISSION.PURCHASES_READ,
+          },
+          {
+            label: t("purchases.pending_reviews"),
+            icon: "i-lucide-clipboard-check",
+            to: "/purchases/pending-reviews",
             permissions: PERMISSION.PURCHASES_READ,
           },
         ],
@@ -283,6 +307,12 @@ export default function useAuthenticatedMenu() {
             label: t("inventory.movements"),
             icon: "i-lucide-arrow-right-left",
             to: "/inventory/movements",
+            permissions: PERMISSION.STOCK_MOVEMENTS_READ,
+          },
+          {
+            label: t("inventory.product_movements"),
+            icon: "i-lucide-package-x",
+            to: "/inventory/product-movements",
             permissions: PERMISSION.STOCK_MOVEMENTS_READ,
           },
         ],
