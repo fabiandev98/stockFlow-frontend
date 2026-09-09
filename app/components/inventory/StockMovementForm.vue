@@ -10,6 +10,7 @@ import {
   useI18n,
   useInventoryModule,
   useLocalePath,
+  useRoute,
   useToast,
 } from "#imports";
 import type {
@@ -17,9 +18,11 @@ import type {
   StockMovementPayload,
   StockMovementType,
 } from "~/types/inventory";
+import { formatQuantity } from "~/utils/quantity-format";
 
 const { t } = useI18n();
 const lp = useLocalePath();
+const route = useRoute();
 const toast = useToast();
 const { fetchStockBatches, createStockMovement } = useInventoryModule();
 
@@ -45,6 +48,15 @@ const state = reactive<StockMovementPayload>({
   reason: null,
   movement_date: null,
 });
+
+const requestedBatchId = Number(route.query.batch);
+if (Number.isInteger(requestedBatchId) && requestedBatchId > 0) {
+  state.stock_batch_id = requestedBatchId;
+}
+
+if (route.query.type === "expired" || route.query.type === "waste") {
+  state.type = route.query.type;
+}
 
 const movementTypes = computed(() =>
   (
@@ -90,12 +102,12 @@ const exceedsAvailableStock = computed<boolean>(
 );
 
 const availableStockLabel = computed<string>(() =>
-  `${availableQuantity.value.toFixed(2)} ${selectedBatchUnit.value}`.trim()
+  formatQuantity(availableQuantity.value, selectedBatchUnit.value)
 );
 
 function batchLabel(batch: InventoryStockBatch): string {
   const material = batch.material?.name ?? `#${batch.material_id}`;
-  const quantity = Number(batch.available_quantity).toFixed(2);
+  const quantity = formatQuantity(batch.available_quantity);
   const unit = batch.material?.unit ?? "";
 
   return `#${batch.id} - ${material} (${quantity} ${unit})`;
@@ -216,7 +228,7 @@ async function onSubmit() {
       type="submit"
       :loading="isSubmitting"
       :disabled="exceedsAvailableStock"
-      color="brand"
+      color="primary"
     >
       {{ $t("common.submit") }}
     </UButton>

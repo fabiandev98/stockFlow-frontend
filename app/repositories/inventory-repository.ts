@@ -3,10 +3,13 @@ import type {
   InventoryAlerts,
   InventoryMaterial,
   InventoryStockBatch,
+  ProductStockMovement,
+  ProductStockMovementPayload,
   StockMovement,
   StockMovementPayload,
 } from "~/types/inventory";
 import type { LaravelPaginationWrapper } from "~/types/pagination";
+import type { ProductBatch } from "~/types/purchase";
 
 export class InventoryRepository extends Repository {
   materialSummary(queryString?: string) {
@@ -48,8 +51,41 @@ export class InventoryRepository extends Repository {
     });
   }
 
+  productBatches(queryString?: string) {
+    const endpoint = queryString ? `/product-batches?${queryString}` : "/product-batches";
+
+    return this.api<LaravelPaginationWrapper<ProductBatch>>(endpoint, { method: "GET" });
+  }
+
+  productStockMovements(queryString?: string) {
+    const endpoint = queryString
+      ? `/product-stock-movements?${queryString}`
+      : "/product-stock-movements";
+
+    return this.api<LaravelPaginationWrapper<ProductStockMovement>>(endpoint, {
+      method: "GET",
+    });
+  }
+
+  productWasteMovements(queryString?: string) {
+    const endpoint = queryString
+      ? `/product-stock-movements/waste?${queryString}`
+      : "/product-stock-movements/waste";
+
+    return this.api<LaravelPaginationWrapper<ProductStockMovement>>(endpoint, {
+      method: "GET",
+    });
+  }
+
   storeStockMovement(payload: StockMovementPayload) {
     return this.api<StockMovement>("/stock-movements", {
+      method: "POST",
+      body: payload,
+    });
+  }
+
+  storeProductStockMovement(payload: ProductStockMovementPayload) {
+    return this.api<ProductStockMovement>("/product-stock-movements", {
       method: "POST",
       body: payload,
     });

@@ -48,7 +48,7 @@ function quantity(value: string | number | null | undefined, unit?: string): str
     <template #header>
       <UButton
         icon="i-lucide-plus"
-        color="brand"
+        color="primary"
         :to="lp('/inventory/movements/create')"
       >
         {{ $t("inventory.new_movement") }}
