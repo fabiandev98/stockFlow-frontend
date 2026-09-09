@@ -71,6 +71,11 @@ export interface DashboardSummary {
   top_suppliers: DashboardTopSupplier[];
 }
 
+export interface DashboardExecutiveSummary {
+  current: DashboardSummary;
+  previous: DashboardSummary;
+}
+
 export interface DashboardSummaryParams {
   start_date?: string;
   end_date?: string;

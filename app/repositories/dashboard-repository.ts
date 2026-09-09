@@ -1,5 +1,6 @@
 import { Repository } from "./repository";
 import type {
+  DashboardExecutiveSummary,
   DashboardSummary,
   DashboardSummaryParams,
 } from "~/types/dashboard";
@@ -22,5 +23,15 @@ export class DashboardRepository extends Repository {
     return this.api<DashboardSummary>(endpoint, {
       method: "GET",
     });
+  }
+
+  executiveSummary(params: DashboardSummaryParams) {
+    const query = new URLSearchParams();
+    if (params.start_date) query.set("start_date", params.start_date);
+    if (params.end_date) query.set("end_date", params.end_date);
+    if (params.expiration_window_days) query.set("expiration_window_days", String(params.expiration_window_days));
+    query.set("compare", "true");
+
+    return this.api<DashboardExecutiveSummary>(`/dashboard/summary?${query.toString()}`, { method: "GET" });
   }
 }

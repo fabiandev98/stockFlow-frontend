@@ -1,4 +1,5 @@
 import { computed, ref } from "vue";
+import { useState } from "#imports";
 import type { DashboardSummaryParams } from "~/types/dashboard";
 
 export type DashboardPeriodPreset =
@@ -9,13 +10,17 @@ export type DashboardPeriodPreset =
   | "custom";
 
 export function useDashboardPeriod(includeExpirationWindow = false) {
+  // Nuxt serializes useState from SSR to the client. Keeping one reference date
+  // prevents a different timezone or midnight boundary from changing the HTML
+  // during hydration.
+  const referenceDate = useState("dashboard-period-reference-date", () => formatDateInput(new Date()));
   const selectedPeriod = ref<DashboardPeriodPreset>("month");
-  const customStartDate = ref(formatDateInput(startOfMonth(new Date())));
-  const customEndDate = ref(formatDateInput(new Date()));
+  const customStartDate = ref(formatDateInput(startOfMonth(parseDateInput(referenceDate.value))));
+  const customEndDate = ref(referenceDate.value);
   const expirationWindowDays = ref(7);
 
   const params = computed<DashboardSummaryParams>(() => {
-    const today = new Date();
+    const today = parseDateInput(referenceDate.value);
     let range: Pick<DashboardSummaryParams, "start_date" | "end_date">;
 
     if (selectedPeriod.value === "custom") {
@@ -55,6 +60,11 @@ export function useDashboardPeriod(includeExpirationWindow = false) {
     expirationWindowDays,
     params,
   };
+}
+
+function parseDateInput(value: string): Date {
+  const [year, month, day] = value.split("-").map(Number);
+  return new Date(year, month - 1, day);
 }
 
 function formatDateInput(date: Date): string {

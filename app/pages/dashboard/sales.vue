@@ -17,15 +17,17 @@ definePageMeta({
 });
 
 const { t } = useI18n();
-const { fetchSummary } = useDashboardModule();
+const { fetchExecutiveSummary } = useDashboardModule();
 const { selectedPeriod, customStartDate, customEndDate, params } =
   useDashboardPeriod();
 
-const { data: summary, pending } = await useAsyncData(
+const { data: executiveSummary, pending } = await useAsyncData(
   "dashboard-sales-analysis",
-  () => fetchSummary(params.value),
+  () => fetchExecutiveSummary(params.value),
   { watch: [params] }
 );
+const summary = computed(() => executiveSummary.value?.current);
+const previousSummary = computed(() => executiveSummary.value?.previous);
 
 const dailyItemsPerPage = 10;
 const dailyPage = ref(1);
@@ -40,21 +42,25 @@ const salesCards = computed(() => [
     label: t("dashboard.metrics.sales_total"),
     value: formatPeso(summary.value?.sales.total),
     icon: "i-lucide-banknote",
+    detail: comparisonDetail(summary.value?.sales.total, previousSummary.value?.sales.total),
   },
   {
     label: t("dashboard.metrics.sales_count"),
     value: String(summary.value?.sales.count ?? 0),
     icon: "i-lucide-receipt",
+    detail: comparisonDetail(summary.value?.sales.count, previousSummary.value?.sales.count),
   },
   {
     label: t("dashboard.metrics.items_sold"),
     value: Number(summary.value?.sales.items_sold ?? 0).toFixed(2),
     icon: "i-lucide-package-check",
+    detail: comparisonDetail(summary.value?.sales.items_sold, previousSummary.value?.sales.items_sold),
   },
   {
     label: t("dashboard.metrics.average_ticket"),
     value: formatPeso(averageTicket.value),
     icon: "i-lucide-calculator",
+    detail: comparisonDetail(averageTicket.value, previousAverageTicket.value),
   },
 ]);
 
@@ -63,21 +69,25 @@ const profitabilityCards = computed(() => [
     label: t("dashboard.metrics.net_sales"),
     value: formatPeso(summary.value?.profitability.net_sales),
     icon: "i-lucide-wallet-cards",
+    detail: comparisonDetail(summary.value?.profitability.net_sales, previousSummary.value?.profitability.net_sales),
   },
   {
     label: t("dashboard.metrics.cogs"),
     value: formatPeso(summary.value?.profitability.cogs),
     icon: "i-lucide-package-minus",
+    detail: comparisonDetail(summary.value?.profitability.cogs, previousSummary.value?.profitability.cogs, true),
   },
   {
     label: t("dashboard.metrics.gross_profit"),
     value: formatPeso(summary.value?.profitability.gross_profit),
     icon: "i-lucide-chart-no-axes-combined",
+    detail: comparisonDetail(summary.value?.profitability.gross_profit, previousSummary.value?.profitability.gross_profit),
   },
   {
     label: t("dashboard.metrics.actual_food_cost"),
     value: `${Number(summary.value?.profitability.actual_food_cost_percentage ?? 0).toFixed(2)}%`,
     icon: "i-lucide-percent",
+    detail: comparisonDetail(summary.value?.profitability.actual_food_cost_percentage, previousSummary.value?.profitability.actual_food_cost_percentage, true),
   },
 ]);
 
@@ -86,13 +96,30 @@ const lossCards = computed(() => [
     label: t("dashboard.metrics.waste_cost"),
     value: formatPeso(summary.value?.profitability.waste_cost),
     icon: "i-lucide-trash-2",
+    detail: comparisonDetail(summary.value?.profitability.waste_cost, previousSummary.value?.profitability.waste_cost, true),
   },
   {
     label: t("dashboard.metrics.adjusted_gross_profit"),
     value: formatPeso(summary.value?.profitability.adjusted_gross_profit),
     icon: "i-lucide-chart-no-axes-combined",
+    detail: comparisonDetail(summary.value?.profitability.adjusted_gross_profit, previousSummary.value?.profitability.adjusted_gross_profit),
   },
 ]);
+
+const previousAverageTicket = computed(() => {
+  const count = previousSummary.value?.sales.count ?? 0;
+  return count > 0 ? Number(previousSummary.value?.sales.total ?? 0) / count : 0;
+});
+
+function comparisonDetail(current: string | number | undefined, previous: string | number | undefined, lowerIsBetter = false): string {
+  const currentValue = Number(current ?? 0);
+  const previousValue = Number(previous ?? 0);
+  if (!previousValue) return "Sin período anterior comparable";
+  const percentage = ((currentValue - previousValue) / Math.abs(previousValue)) * 100;
+  const direction = percentage === 0 ? "=" : percentage > 0 ? "↑" : "↓";
+  const favorable = lowerIsBetter ? percentage < 0 : percentage > 0;
+  return `${direction} ${Math.abs(percentage).toFixed(1)}% vs. período anterior${favorable ? " · mejor" : percentage === 0 ? "" : " · revisar"}`;
+}
 
 const maxTopProductQuantity = computed(() =>
   Math.max(
