@@ -27,6 +27,7 @@ type ProductKind = "composed" | "simple";
 
 const props = defineProps<{
   product?: Product;
+  mode?: "product" | "preparation";
 }>();
 
 const emit = defineEmits<{
@@ -40,6 +41,7 @@ const { fetchMaterials } = useMaterialModule();
 const { createProduct, updateProduct } = useProductModule();
 
 const isUpdating = computed<boolean>(() => !!props.product);
+const isInternalPreparation = computed(() => props.mode === "preparation");
 const isSubmitting = ref<boolean>(false);
 const nextCompositionKey = ref<number>(1);
 
@@ -55,6 +57,7 @@ const schema = z.object({
   name: z.string().min(2),
   sale_price: z.number().min(0),
   is_composed: z.boolean(),
+  is_internal_preparation: z.boolean(),
   production_mode: z.enum(["on_sale", "batch"]),
   shelf_life_days: z.number().int().min(0).nullable(),
   is_active: z.boolean(),
@@ -92,6 +95,7 @@ const state = reactive<{
   name: string;
   sale_price: number;
   is_composed: boolean;
+  is_internal_preparation: boolean;
   production_mode: "on_sale" | "batch";
   shelf_life_days: number | null;
   is_active: boolean;
@@ -100,8 +104,9 @@ const state = reactive<{
   product_category_id: props.product?.product_category_id ?? null,
   name: props.product?.name ?? "",
   sale_price: Number(props.product?.sale_price ?? 0),
-  is_composed: props.product?.is_composed ?? true,
-  production_mode: props.product?.production_mode ?? "on_sale",
+  is_composed: isInternalPreparation.value || (props.product?.is_composed ?? true),
+  is_internal_preparation: isInternalPreparation.value || (props.product?.is_internal_preparation ?? false),
+  production_mode: isInternalPreparation.value ? "batch" : (props.product?.production_mode ?? "on_sale"),
   shelf_life_days: props.product?.shelf_life_days ?? null,
   is_active: props.product?.is_active ?? true,
   compositions:
@@ -164,12 +169,13 @@ function payloadFromState(): ProductPayload {
   return {
     product_category_id: state.product_category_id,
     name: state.name,
-    sale_price: state.sale_price,
-    is_composed: state.is_composed,
-    production_mode: state.is_composed ? state.production_mode : "on_sale",
-    shelf_life_days: state.is_composed && state.production_mode === "batch" ? state.shelf_life_days : null,
+    sale_price: isInternalPreparation.value ? 0 : state.sale_price,
+    is_composed: isInternalPreparation.value || state.is_composed,
+    is_internal_preparation: isInternalPreparation.value || state.is_composed && state.production_mode === "batch" && state.is_internal_preparation,
+    production_mode: isInternalPreparation.value ? "batch" : state.is_composed ? state.production_mode : "on_sale",
+    shelf_life_days: (isInternalPreparation.value || state.is_composed && state.production_mode === "batch") ? state.shelf_life_days : null,
     is_active: state.is_active,
-    compositions: state.is_composed
+    compositions: (isInternalPreparation.value || state.is_composed)
       ? state.compositions.map((composition) => ({
           material_id: composition.material_id,
           quantity_required: composition.quantity_required,
@@ -207,6 +213,7 @@ async function onSubmit() {
         name: "",
         sale_price: 0,
         is_composed: true,
+        is_internal_preparation: false,
         production_mode: "on_sale",
         shelf_life_days: null,
         is_active: true,
@@ -257,7 +264,7 @@ async function onSubmit() {
       </UFormField>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
+    <div v-if="!isInternalPreparation" class="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
       <UFormField name="sale_price">
         <template #label>
           <SharedFormFieldLabel
@@ -289,7 +296,7 @@ async function onSubmit() {
       <UCheckbox v-model="state.is_active" :label="$t('products.is_active')" />
     </UFormField>
 
-    <UFormField name="is_composed">
+    <UFormField v-if="!isInternalPreparation" name="is_composed">
       <template #label>
         <SharedFormFieldLabel
           :label="$t('products.product_type')"
@@ -308,13 +315,17 @@ async function onSubmit() {
       </p>
     </UFormField>
 
-    <div v-if="state.is_composed" class="space-y-3">
+    <div v-if="state.is_composed || isInternalPreparation" class="space-y-3">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 rounded border border-neutral-200 p-3">
-        <UFormField :label="$t('products.production_mode')" name="production_mode">
+        <UFormField v-if="!isInternalPreparation" :label="$t('products.production_mode')" name="production_mode">
           <USelect v-model="state.production_mode" :items="productionModeItems" value-key="value" label-key="label" class="w-full" />
         </UFormField>
-        <UFormField v-if="state.production_mode === 'batch'" :label="$t('products.shelf_life_days')" name="shelf_life_days">
+        <UFormField v-if="isInternalPreparation || state.production_mode === 'batch'" :label="$t('products.shelf_life_days')" name="shelf_life_days">
           <UInput v-model.number="state.shelf_life_days" type="number" min="0" step="1" class="w-full" />
+        </UFormField>
+        <UFormField v-if="!isInternalPreparation && state.production_mode === 'batch'" name="is_internal_preparation" class="md:col-span-2">
+          <UCheckbox v-model="state.is_internal_preparation" :label="$t('products.is_internal_preparation')" />
+          <p class="mt-1 text-sm text-muted">{{ $t('products.is_internal_preparation_help') }}</p>
         </UFormField>
       </div>
       <div class="flex items-center justify-between gap-3">
@@ -334,7 +345,7 @@ async function onSubmit() {
       <div
         v-for="(composition, index) in state.compositions"
         :key="composition.key"
-        class="grid grid-cols-1 lg:grid-cols-12 gap-3 items-end border border-neutral-200 rounded p-3"
+        class="grid grid-cols-1 items-end gap-3 rounded-lg border border-default bg-elevated/30 p-4 lg:grid-cols-12"
       >
         <UFormField
           :name="`compositions.${index}.material_id`"
@@ -399,7 +410,7 @@ async function onSubmit() {
       </div>
     </div>
 
-    <UButton type="submit" :loading="isSubmitting" color="brand">
+    <UButton type="submit" :loading="isSubmitting" color="primary">
       {{ isUpdating ? $t("common.save_changes") : $t("common.submit") }}
     </UButton>
   </UForm>

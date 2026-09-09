@@ -35,6 +35,17 @@ const { userCan } = useAccessControl([
 
 const isDeleting = ref<boolean>(false);
 
+function fetchSellableProducts(params: {
+  page?: number;
+  filters?: Record<string, string | number | boolean>;
+  sort?: string;
+}) {
+  return fetchProducts({
+    ...params,
+    filters: { ...params.filters, is_internal_preparation: false },
+  });
+}
+
 const columns: TableColumn<Product>[] = [
   { accessorKey: "id", header: t("common.id"), enableSorting: false },
   { accessorKey: "name", header: t("products.name") },
@@ -105,7 +116,7 @@ async function handleDelete(
 <template>
   <SharedLazyLoadedDatatable
     :columns="columns"
-    :fetch-function="fetchProducts"
+    :fetch-function="fetchSellableProducts"
     data-key="products"
     :empty-message="t('products.no_products')"
     global-filter-enabled
@@ -141,6 +152,15 @@ async function handleDelete(
           v-if="userCan(PERMISSION.PRODUCTS_UPDATE)"
           :route="lp('/products/edit-' + row.original.id)"
         />
+        <UButton
+          v-if="row.original.is_composed && userCan(PERMISSION.PRODUCTS_UPDATE)"
+          icon="i-lucide-chef-hat"
+          color="primary"
+          variant="soft"
+          :to="lp('/recipes/edit-' + row.original.id)"
+        >
+          {{ $t("recipes.title") }}
+        </UButton>
         <UButton
           v-if="row.original.is_composed && row.original.production_mode === 'batch' && userCan(PERMISSION.PRODUCTS_UPDATE)"
           icon="i-lucide-chef-hat"
