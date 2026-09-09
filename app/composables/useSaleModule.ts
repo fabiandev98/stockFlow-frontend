@@ -1,6 +1,6 @@
 import { SaleRepository } from "~/repositories/sale-repository";
 import type { LaravelPaginationWrapper } from "~/types/pagination";
-import type { Sale, SalePayload } from "~/types/sale";
+import type { Sale, SalePayload, SaleReturnPayload } from "~/types/sale";
 import { useQueryBuilder } from "#imports";
 
 export function useSaleModule() {
@@ -28,10 +28,15 @@ export function useSaleModule() {
     return await saleRepo.cancel(id, { reason });
   }
 
+  async function returnSale(id: number, payload: SaleReturnPayload): Promise<void> {
+    await saleRepo.returnSale(id, payload);
+  }
+
   return {
     fetchSales,
     createSale,
     fetchSaleById,
     cancelSale,
+    returnSale,
   };
 }

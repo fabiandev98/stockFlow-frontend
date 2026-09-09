@@ -34,7 +34,7 @@ const isSubmitting = ref<boolean>(false);
 const nextItemKey = ref<number>(1);
 
 const { data: products } = await useAsyncData("sale-form-products", () =>
-  fetchProducts({ filters: { is_active: true } })
+  fetchProducts({ filters: { is_active: true, is_internal_preparation: false } })
 );
 
 const schema = z.object({
@@ -439,7 +439,7 @@ async function onSubmit() {
       type="submit"
       :loading="isSubmitting"
       :disabled="hasInsufficientStock || discountExceedsSubtotal"
-      color="brand"
+      color="primary"
     >
       {{ $t("common.submit") }}
     </UButton>

@@ -27,8 +27,8 @@ const { t } = useI18n();
 const lp = useLocalePath();
 const route = useRoute();
 const toast = useToast();
-const { fetchSaleById, cancelSale } = useSaleModule();
-const { userCan } = useAccessControl([PERMISSION.SALES_CANCEL]);
+const { fetchSaleById, cancelSale, returnSale } = useSaleModule();
+const { userCan } = useAccessControl([PERMISSION.SALES_CANCEL, PERMISSION.SALES_RETURN]);
 
 const { data, error, refresh } = await useAsyncData(() =>
   fetchSaleById(Number(route.params.id))
@@ -37,6 +37,11 @@ const { data, error, refresh } = await useAsyncData(() =>
 const isCancelling = ref(false);
 const isCancellationFormVisible = ref(false);
 const cancellationReason = ref("");
+const isReturnFormVisible = ref(false);
+const isReturning = ref(false);
+const returnReason = ref("");
+const returnDate = ref(new Date().toISOString().slice(0, 10));
+const returnItems = ref<Array<{ sale_item_id: number; quantity: number; disposition: "restock" | "waste" }>>([]);
 
 if (error.value || data.value === null) {
   throw createError({
@@ -80,6 +85,27 @@ async function handleCancel(): Promise<void> {
     isCancelling.value = false;
   }
 }
+
+function openReturnForm(): void {
+  returnItems.value = (data.value?.items ?? []).map((item) => ({ sale_item_id: item.id, quantity: 0, disposition: "restock" }));
+  isReturnFormVisible.value = true;
+}
+
+async function handleReturn(): Promise<void> {
+  if (!data.value || isReturning.value || returnReason.value.trim().length < 3) return;
+  const items = returnItems.value.filter((item) => item.quantity > 0);
+  if (!items.length) return;
+  isReturning.value = true;
+  try {
+    await returnSale(data.value.id, { return_date: returnDate.value, reason: returnReason.value.trim(), items });
+    await refresh();
+    isReturnFormVisible.value = false;
+    returnReason.value = "";
+    toast.add({ title: t("sales.return_success"), color: "success" });
+  } catch (error: unknown) {
+    toast.add({ title: t("common.generic_error_title"), description: error instanceof FetchError ? error.data?.message ?? error.message : t("common.generic_unknown_error"), color: "error" });
+  } finally { isReturning.value = false; }
+}
 </script>
 
 <template>
@@ -95,6 +121,9 @@ async function handleCancel(): Promise<void> {
       </div>
 
       <div class="flex gap-2">
+        <UButton v-if="data.status === 'completed' && userCan(PERMISSION.SALES_RETURN)" icon="i-lucide-undo-2" color="warning" variant="soft" @click="openReturnForm">
+          {{ $t("sales.return_sale") }}
+        </UButton>
         <UButton
           v-if="data.status === 'completed' && userCan(PERMISSION.SALES_CANCEL)"
           icon="i-lucide-ban"
@@ -139,6 +168,22 @@ async function handleCancel(): Promise<void> {
           </UButton>
         </div>
       </template>
+    </UCard>
+
+    <UCard v-if="isReturnFormVisible" class="border border-warning-200">
+      <template #header><h2 class="font-semibold">{{ $t("sales.return_sale") }}</h2></template>
+      <div class="space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <UFormField :label="$t('sales.return_date')" required><UInput v-model="returnDate" type="date" class="w-full" /></UFormField>
+          <UFormField :label="$t('sales.return_reason')" required><UInput v-model="returnReason" class="w-full" /></UFormField>
+        </div>
+        <div v-for="(returnItem, index) in returnItems" :key="returnItem.sale_item_id" class="grid grid-cols-1 md:grid-cols-3 gap-3 border rounded p-3">
+          <p class="self-center font-medium">{{ data.items?.[index]?.product?.name }}</p>
+          <UFormField :label="$t('sales.quantity')"><UInput v-model.number="returnItem.quantity" type="number" min="0" step="1" :max="Number(data.items?.[index]?.quantity ?? 0)" class="w-full" /></UFormField>
+          <UFormField :label="$t('sales.return_disposition')"><USelect v-model="returnItem.disposition" :items="[{ label: $t('sales.restock'), value: 'restock' }, { label: $t('sales.return_waste'), value: 'waste' }]" value-key="value" label-key="label" class="w-full" /></UFormField>
+        </div>
+      </div>
+      <template #footer><div class="flex justify-end gap-2"><UButton color="neutral" variant="outline" @click="isReturnFormVisible = false">{{ $t('common.cancel') }}</UButton><UButton color="warning" :loading="isReturning" @click="handleReturn">{{ $t('sales.confirm_return') }}</UButton></div></template>
     </UCard>
 
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -272,9 +317,12 @@ async function handleCancel(): Promise<void> {
                 <p class="font-medium">
                   {{ movement.material?.name ?? `#${movement.material_id}` }}
                 </p>
-                <UBadge color="neutral" variant="soft">
-                  {{ $t("inventory.batch") }} #{{ movement.stock_batch_id }}
-                </UBadge>
+                <div class="flex items-center gap-2">
+                  <UBadge :color="movement.type === 'sale' ? 'error' : movement.type === 'sale_return' ? 'success' : 'warning'" variant="soft">
+                    {{ $t(`inventory.movement_types.${movement.type}`) }}
+                  </UBadge>
+                  <UBadge color="neutral" variant="soft">{{ $t("inventory.batch") }} #{{ movement.stock_batch_id }}</UBadge>
+                </div>
               </div>
 
               <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -296,6 +344,7 @@ async function handleCancel(): Promise<void> {
                   </p>
                 </div>
               </div>
+              <p v-if="movement.reason" class="mt-3 text-xs text-neutral-500">{{ movement.reason }}</p>
             </div>
           </div>
         </div>
@@ -315,9 +364,12 @@ async function handleCancel(): Promise<void> {
                 <p class="font-medium">
                   {{ movement.product?.name ?? `#${movement.product_id}` }}
                 </p>
-                <UBadge color="neutral" variant="soft">
-                  {{ $t("inventory.batch") }} #{{ movement.product_batch_id }}
-                </UBadge>
+                <div class="flex items-center gap-2">
+                  <UBadge :color="movement.type === 'sale' ? 'error' : movement.type === 'sale_return' ? 'success' : 'warning'" variant="soft">
+                    {{ $t(`inventory.movement_types.${movement.type}`) }}
+                  </UBadge>
+                  <UBadge color="neutral" variant="soft">{{ $t("inventory.batch") }} #{{ movement.product_batch_id }}</UBadge>
+                </div>
               </div>
 
               <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -339,6 +391,7 @@ async function handleCancel(): Promise<void> {
                   </p>
                 </div>
               </div>
+              <p v-if="movement.reason" class="mt-3 text-xs text-neutral-500">{{ movement.reason }}</p>
             </div>
           </div>
         </div>

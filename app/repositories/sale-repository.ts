@@ -1,5 +1,5 @@
 import { Repository } from "./repository";
-import type { CancelSalePayload, Sale, SalePayload } from "~/types/sale";
+import type { CancelSalePayload, Sale, SalePayload, SaleReturnPayload } from "~/types/sale";
 import type { LaravelPaginationWrapper } from "~/types/pagination";
 
 const BASE_ENDPOINT_URL = "/sales";
@@ -32,5 +32,9 @@ export class SaleRepository extends Repository {
       method: "POST",
       body: payload,
     });
+  }
+
+  returnSale(id: number, payload: SaleReturnPayload) {
+    return this.api(`${BASE_ENDPOINT_URL}/${id}/returns`, { method: "POST", body: payload });
   }
 }
