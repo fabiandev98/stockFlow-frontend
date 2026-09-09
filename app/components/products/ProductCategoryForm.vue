@@ -87,7 +87,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
       <UInput v-model="state.name" class="w-full" />
     </UFormField>
 
-    <UButton type="submit" :loading="isSubmitting" color="brand">
+    <UButton type="submit" :loading="isSubmitting" color="primary">
       {{ isUpdating ? $t("common.save_changes") : $t("common.submit") }}
     </UButton>
   </UForm>

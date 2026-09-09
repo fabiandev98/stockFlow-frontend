@@ -205,7 +205,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
       />
     </UFormField>
 
-    <UButton type="submit" :loading="isSubmitting" color="brand">
+    <UButton type="submit" :loading="isSubmitting" color="primary">
       {{ isUpdating ? $t("common.save_changes") : $t("common.submit") }}
     </UButton>
   </UForm>
