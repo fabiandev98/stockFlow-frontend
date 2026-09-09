@@ -1,5 +1,5 @@
 import { SupplierRepository } from "~/repositories/supplier-repository";
-import type { Supplier, SupplierPayload } from "~/types/supplier";
+import type { Supplier, SupplierNote, SupplierNotePayload, SupplierPayload, SupplierQualityMetrics } from "~/types/supplier";
 import type { LaravelPaginationWrapper } from "~/types/pagination";
 import { useQueryBuilder } from "#imports";
 
@@ -35,11 +35,31 @@ export function useSupplierModule() {
     return await supplierRepo.findById(id);
   }
 
+  async function fetchSupplierQuality(id: number): Promise<SupplierQualityMetrics> {
+    return await supplierRepo.quality(id);
+  }
+
+  async function fetchSupplierNotes(id: number): Promise<SupplierNote[]> {
+    return await supplierRepo.notes(id);
+  }
+
+  async function createSupplierNote(id: number, payload: SupplierNotePayload): Promise<SupplierNote> {
+    return await supplierRepo.storeNote(id, payload);
+  }
+
+  async function deleteSupplierNote(supplierId: number, noteId: number): Promise<null> {
+    return await supplierRepo.deleteNote(supplierId, noteId);
+  }
+
   return {
     fetchSuppliers,
     createSupplier,
     updateSupplier,
     deleteSupplier,
     fetchSupplierById,
+    fetchSupplierQuality,
+    fetchSupplierNotes,
+    createSupplierNote,
+    deleteSupplierNote,
   };
 }

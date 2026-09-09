@@ -1,5 +1,5 @@
 import { PurchaseRepository } from "~/repositories/purchase-repository";
-import type { Purchase, PurchasePayload } from "~/types/purchase";
+import type { Purchase, PurchaseItem, PurchaseItemYieldPayload, PurchasePayload } from "~/types/purchase";
 import type { LaravelPaginationWrapper } from "~/types/pagination";
 import { useQueryBuilder } from "#imports";
 
@@ -14,6 +14,15 @@ export function usePurchaseModule() {
   }): Promise<LaravelPaginationWrapper<Purchase>> {
     const queryString = buildQueryString(params);
     return await purchaseRepo.index(queryString);
+  }
+
+  async function fetchPendingPurchaseReviews(params: {
+    page?: number;
+    filters?: Record<string, string | number | boolean>;
+    sort?: string;
+  }): Promise<LaravelPaginationWrapper<Purchase>> {
+    const queryString = buildQueryString(params);
+    return await purchaseRepo.pendingReviews(queryString);
   }
 
   async function createPurchase(payload: PurchasePayload): Promise<Purchase> {
@@ -35,11 +44,17 @@ export function usePurchaseModule() {
     return await purchaseRepo.findById(id);
   }
 
+  async function savePurchaseItemYield(purchaseId: number, itemId: number, payload: PurchaseItemYieldPayload): Promise<PurchaseItem> {
+    return await purchaseRepo.storeItemYield(purchaseId, itemId, payload);
+  }
+
   return {
     fetchPurchases,
+    fetchPendingPurchaseReviews,
     createPurchase,
     updatePurchase,
     deletePurchase,
     fetchPurchaseById,
+    savePurchaseItemYield,
   };
 }

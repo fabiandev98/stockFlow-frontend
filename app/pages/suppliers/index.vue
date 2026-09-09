@@ -110,6 +110,7 @@ async function handleDelete(
           v-if="userCan(PERMISSION.SUPPLIERS_UPDATE)"
           :route="lp('/suppliers/edit-' + row.original.id)"
         />
+        <UTooltip :text="$t('suppliers.quality_metrics')"><UButton :to="lp('/suppliers/quality-' + row.original.id)" icon="i-lucide-chart-no-axes-combined" color="neutral" variant="link" square :aria-label="$t('suppliers.quality_metrics')" /></UTooltip>
       </div>
     </template>
   </SharedLazyLoadedDatatable>

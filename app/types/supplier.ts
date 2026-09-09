@@ -11,3 +11,34 @@ export interface Supplier extends SupplierPayload {
   created_at: string;
   updated_at: string;
 }
+
+export interface SupplierQualityMetrics {
+  delivered_quantity: number;
+  accepted_quantity: number;
+  rejected_quantity: number;
+  acceptance_percentage: number;
+  rejected_value: number;
+  incidents: number;
+  rated_deliveries: number;
+  good_ratings: number;
+  positive_feedback_percentage: number;
+  average_rating: number;
+  feedback_incidents: number;
+  evaluated_items: number;
+  average_yield_percentage: number;
+  processing_waste_quantity: number;
+  processing_waste_value: number;
+}
+
+export interface SupplierNotePayload {
+  rating: "good" | "regular" | "bad";
+  issue_type: "quality" | "shortage" | "packaging" | "expiration" | "other" | null;
+  note: string | null;
+}
+
+export interface SupplierNote extends SupplierNotePayload {
+  id: number;
+  supplier_id: number;
+  user_id: number | null;
+  created_at: string;
+}

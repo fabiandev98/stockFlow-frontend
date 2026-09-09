@@ -7,6 +7,9 @@ export interface PurchaseItemPayload {
   material_id: number | null;
   product_id: number | null;
   quantity: number;
+  accepted_quantity?: number;
+  rejected_quantity?: number;
+  quality_issue_reason?: string | null;
   unit_cost: number;
   expiration_date: string | null;
 }
@@ -16,6 +19,11 @@ export interface PurchasePayload {
   purchase_date: string;
   notes: string | null;
   items: PurchaseItemPayload[];
+}
+
+export interface PurchaseItemYieldPayload {
+  usable_quantity: number;
+  processing_waste_reason: string | null;
 }
 
 export interface StockBatch {
@@ -58,6 +66,14 @@ export interface PurchaseItem {
   product_id: number | null;
   product?: Product | null;
   quantity: string;
+  accepted_quantity: string;
+  rejected_quantity: string;
+  usable_quantity: string | null;
+  processing_waste_reason: string | null;
+  yield_recorded_at: string | null;
+  yield_reviewer_id: number | null;
+  yield_reviewer?: User | null;
+  quality_issue_reason: string | null;
   unit_cost: string;
   total_cost: string;
   expiration_date: string | null;
@@ -77,6 +93,7 @@ export interface Purchase {
   total_cost: string;
   notes: string | null;
   items_count?: number;
+  pending_review_items_count?: number;
   items?: PurchaseItem[];
   created_at: string;
   updated_at: string;

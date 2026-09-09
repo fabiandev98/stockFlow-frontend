@@ -121,8 +121,14 @@ const state = reactive<{
         has_expiration: !!item.expiration_date,
         expiration_date: item.expiration_date?.slice(0, 10) ?? null,
       })
-    ) ?? [createItem()],
+    ) ?? [],
 });
+
+const itemPicker = reactive<{
+  item_type: PurchaseItemType;
+  material_id: number | null;
+  product_id: number | null;
+}>({ item_type: "material", material_id: null, product_id: null });
 
 const materialItems = computed<Material[]>(() => materials.value?.data ?? []);
 const productItems = computed<Product[]>(() => products.value?.data ?? []);
@@ -138,25 +144,12 @@ function selectedMaterial(item: PurchaseFormItem): Material | undefined {
   return materialItems.value.find((material) => material.id === item.material_id);
 }
 
-function handleItemTypeChange(item: PurchaseFormItem): void {
-  item.material_id = null;
-  item.product_id = null;
-  item.has_expiration = false;
-  item.expiration_date = null;
-}
+function setPickerItemType(itemType: PurchaseItemType): void {
+  if (itemPicker.item_type === itemType) return;
 
-function handleMaterialChange(item: PurchaseFormItem): void {
-  if (!selectedMaterial(item)?.is_perishable) {
-    item.has_expiration = false;
-    item.expiration_date = null;
-  }
-}
-
-function setItemType(item: PurchaseFormItem, itemType: PurchaseItemType): void {
-  if (item.item_type === itemType) return;
-
-  item.item_type = itemType;
-  handleItemTypeChange(item);
+  itemPicker.item_type = itemType;
+  itemPicker.material_id = null;
+  itemPicker.product_id = null;
 }
 
 function shouldShowExpirationDate(item: PurchaseFormItem): boolean {
@@ -169,8 +162,38 @@ function itemTotal(item: PurchaseFormItem): string {
   return formatPeso(item.quantity * item.unit_cost);
 }
 
-function addItem(): void {
-  state.items.push(createItem());
+function itemUnit(item: PurchaseFormItem): string {
+  return item.item_type === "material"
+    ? selectedMaterial(item)?.unit ?? ""
+    : "u";
+}
+
+function quantityLabel(item: PurchaseFormItem): string {
+  const unit = itemUnit(item);
+
+  return unit ? `${t("purchases.quantity")} (${unit})` : t("purchases.quantity");
+}
+
+function selectInitialZero(event: FocusEvent): void {
+  const input = event.target;
+
+  if (input instanceof HTMLInputElement && Number(input.value) === 0) {
+    input.select();
+  }
+}
+
+function addSelectedItem(): void {
+  const isMaterial = itemPicker.item_type === "material";
+  const selectedId = isMaterial ? itemPicker.material_id : itemPicker.product_id;
+  if (selectedId === null) return;
+
+  state.items.push(createItem({
+    item_type: itemPicker.item_type,
+    material_id: isMaterial ? selectedId : null,
+    product_id: isMaterial ? null : selectedId,
+  }));
+  itemPicker.material_id = null;
+  itemPicker.product_id = null;
 }
 
 function removeItem(index: number): void {
@@ -224,7 +247,7 @@ async function onSubmit() {
         supplier_id: null,
         purchase_date: today(),
         notes: null,
-        items: [createItem()],
+        items: [],
       });
     }
   } catch (error: unknown) {
@@ -277,188 +300,15 @@ async function onSubmit() {
       <UTextarea v-model="state.notes" class="w-full" />
     </UFormField>
 
-    <div class="space-y-3">
-      <div class="flex items-center justify-between gap-3">
-        <h2 class="text-base font-medium">
-          {{ $t("purchases.items") }}
-        </h2>
-        <UButton
-          type="button"
-          icon="i-lucide-plus"
-          variant="soft"
-          @click="addItem"
-        >
-          {{ $t("purchases.add_item") }}
-        </UButton>
+    <div class="space-y-4">
+      <div class="flex items-center justify-between gap-3"><h2 class="text-base font-medium">{{ $t("purchases.items") }}</h2></div>
+      <div class="grid grid-cols-1 items-end gap-3 rounded-lg border border-default bg-elevated/30 p-4 xl:grid-cols-[minmax(14rem,.8fr)_minmax(0,1fr)_auto]">
+        <UFormField :label="$t('purchases.item_type')"><div class="grid grid-cols-2 gap-2"><UButton v-for="itemType in itemTypeItems" :key="itemType.value" type="button" :variant="itemPicker.item_type === itemType.value ? 'solid' : 'outline'" color="neutral" size="sm" @click="setPickerItemType(itemType.value)">{{ itemType.label }}</UButton></div></UFormField>
+        <UFormField v-if="itemPicker.item_type === 'material'" :label="$t('purchases.material')"><USelect v-model="itemPicker.material_id" :items="materialItems" value-key="id" label-key="name" class="w-full" /></UFormField>
+        <UFormField v-else :label="$t('purchases.product')"><USelect v-model="itemPicker.product_id" :items="productItems" value-key="id" label-key="name" class="w-full" /></UFormField>
+        <UButton type="button" icon="i-lucide-plus" color="primary" class="w-full whitespace-nowrap xl:w-auto" :disabled="itemPicker.item_type === 'material' ? itemPicker.material_id === null : itemPicker.product_id === null" @click="addSelectedItem">{{ $t("purchases.add_item") }}</UButton>
       </div>
-
-      <div
-        v-for="(item, index) in state.items"
-        :key="item.key"
-        class="relative grid grid-cols-1 lg:grid-cols-12 gap-3 items-end border border-neutral-200 rounded p-4 pr-14"
-      >
-        <UButton
-          type="button"
-          icon="i-lucide-trash"
-          color="error"
-          variant="ghost"
-          class="absolute right-3 top-3"
-          :disabled="state.items.length === 1"
-          @click="removeItem(index)"
-        />
-
-        <UFormField
-          :name="`items.${index}.item_type`"
-          class="lg:col-span-3"
-        >
-          <template #label>
-            <SharedFormFieldLabel
-              :label="$t('purchases.item_type')"
-              :hint="$t('purchases.hints.item_type')"
-              required
-            />
-          </template>
-          <div class="grid grid-cols-2 gap-2">
-            <UButton
-              v-for="itemType in itemTypeItems"
-              :key="itemType.value"
-              type="button"
-              :variant="item.item_type === itemType.value ? 'solid' : 'outline'"
-              color="neutral"
-              class="justify-center"
-              @click="setItemType(item, itemType.value)"
-            >
-              {{ itemType.label }}
-            </UButton>
-          </div>
-        </UFormField>
-
-        <UFormField
-          v-if="item.item_type === 'material'"
-          :name="`items.${index}.material_id`"
-          class="lg:col-span-3"
-        >
-          <template #label>
-            <SharedFormFieldLabel
-              :label="$t('purchases.material')"
-              :hint="$t('purchases.hints.material')"
-              required
-            />
-          </template>
-          <USelect
-            v-model="item.material_id"
-            :items="materialItems"
-            value-key="id"
-            label-key="name"
-            class="w-full"
-            @update:model-value="handleMaterialChange(item)"
-          />
-        </UFormField>
-
-        <UFormField
-          v-else
-          :name="`items.${index}.product_id`"
-          class="lg:col-span-3"
-        >
-          <template #label>
-            <SharedFormFieldLabel
-              :label="$t('purchases.product')"
-              :hint="$t('purchases.hints.product')"
-              required
-            />
-          </template>
-          <USelect
-            v-model="item.product_id"
-            :items="productItems"
-            value-key="id"
-            label-key="name"
-            class="w-full"
-          />
-        </UFormField>
-
-        <UFormField
-          :name="`items.${index}.quantity`"
-          class="lg:col-span-2"
-        >
-          <template #label>
-            <SharedFormFieldLabel
-              :label="$t('purchases.quantity')"
-              :hint="$t('purchases.hints.quantity')"
-              required
-            />
-          </template>
-          <UInput
-            v-model.number="item.quantity"
-            type="number"
-            min="0.01"
-            step="0.01"
-            class="w-full"
-          />
-        </UFormField>
-
-        <UFormField
-          :name="`items.${index}.unit_cost`"
-          class="lg:col-span-2"
-        >
-          <template #label>
-            <SharedFormFieldLabel
-              :label="$t('purchases.unit_cost')"
-              :hint="$t('purchases.hints.unit_cost')"
-              required
-            />
-          </template>
-          <UInput
-            v-model.number="item.unit_cost"
-            type="number"
-            min="0"
-            step="0.01"
-            class="w-full"
-          />
-        </UFormField>
-
-        <div v-if="item.item_type === 'product'" class="lg:col-span-2">
-          <p class="text-xs text-neutral-500 mb-2">
-            {{ $t("purchases.expiration_date") }}
-          </p>
-          <UCheckbox
-            v-model="item.has_expiration"
-            :label="$t('purchases.has_expiration')"
-          />
-          <UInput
-            v-if="item.has_expiration"
-            v-model="item.expiration_date"
-            type="date"
-            class="w-full mt-2"
-          />
-        </div>
-
-        <UFormField
-          v-else-if="shouldShowExpirationDate(item)"
-          :label="$t('purchases.expiration_date')"
-          :name="`items.${index}.expiration_date`"
-          class="lg:col-span-2"
-        >
-          <UInput v-model="item.expiration_date" type="date" class="w-full" />
-        </UFormField>
-
-        <div v-else class="lg:col-span-2">
-          <p class="text-xs text-neutral-500">
-            {{ $t("purchases.expiration_date") }}
-          </p>
-          <p class="text-sm text-neutral-400">
-            {{ $t("purchases.not_perishable") }}
-          </p>
-        </div>
-
-        <div class="lg:col-span-12 flex items-center justify-end gap-3 border-t border-neutral-200 pt-3 mt-1">
-          <p class="text-xs text-neutral-500">
-            {{ $t("purchases.item_total") }}
-          </p>
-          <p class="text-lg font-semibold text-highlighted">
-            {{ itemTotal(item) }}
-          </p>
-        </div>
-      </div>
+      <div class="overflow-x-auto rounded-lg border border-default"><table class="w-full min-w-[980px] text-left"><thead class="bg-elevated/30 text-sm text-muted"><tr><th class="px-4 py-3">{{ $t('purchases.item_type') }}</th><th class="px-4 py-3">{{ $t('purchases.material') }}</th><th class="px-4 py-3">{{ $t('purchases.quantity') }}</th><th class="px-4 py-3">{{ $t('products.unit') }}</th><th class="px-4 py-3">{{ $t('purchases.unit_cost') }}</th><th class="px-4 py-3">{{ $t('purchases.expiration_date') }}</th><th class="px-4 py-3 text-right">{{ $t('purchases.item_total') }}</th><th class="w-12 px-2 py-3" /></tr></thead><tbody><tr v-for="(item, index) in state.items" :key="item.key" class="border-t border-default"><td class="px-4 py-3 text-sm">{{ item.item_type === 'material' ? $t('purchases.item_types.material') : $t('purchases.item_types.product') }}</td><td class="min-w-60 px-4 py-3 font-medium">{{ item.item_type === 'material' ? selectedMaterial(item)?.name ?? '—' : productItems.find(product => product.id === item.product_id)?.name ?? '—' }}</td><td class="min-w-30 px-4 py-3"><UInput v-model.number="item.quantity" type="number" min="0.01" step="0.01" :aria-label="quantityLabel(item)" class="w-full" /></td><td class="whitespace-nowrap px-4 py-3 text-sm text-muted">{{ itemUnit(item) || '—' }}</td><td class="min-w-34 px-4 py-3"><UInput v-model.number="item.unit_cost" type="number" min="0" step="0.01" :aria-label="$t('purchases.unit_cost')" class="w-full" @focus="selectInitialZero" /></td><td class="min-w-42 px-4 py-3"><template v-if="item.item_type === 'product'"><UCheckbox v-model="item.has_expiration" :label="$t('purchases.has_expiration')" /><UInput v-if="item.has_expiration" v-model="item.expiration_date" type="date" class="mt-2 w-full" /></template><UInput v-else-if="shouldShowExpirationDate(item)" v-model="item.expiration_date" type="date" :aria-label="$t('purchases.expiration_date')" class="w-full" /><span v-else class="text-sm text-muted">—</span></td><td class="whitespace-nowrap px-4 py-3 text-right font-semibold">{{ itemTotal(item) }}</td><td class="px-2 py-3"><UButton type="button" icon="i-lucide-trash" color="error" variant="ghost" :aria-label="$t('common.delete')" @click="removeItem(index)" /></td></tr><tr v-if="state.items.length === 0"><td colspan="8" class="px-4 py-8 text-center text-sm text-muted">{{ $t('purchases.add_item') }}</td></tr></tbody></table></div>
     </div>
 
     <div class="flex items-center justify-between border-t pt-4">
@@ -470,7 +320,7 @@ async function onSubmit() {
       </p>
     </div>
 
-    <UButton type="submit" :loading="isSubmitting" color="brand">
+    <UButton type="submit" :loading="isSubmitting" color="primary">
       {{ isUpdating ? $t("common.save_changes") : $t("common.submit") }}
     </UButton>
   </UForm>
