@@ -214,6 +214,12 @@
     "category": "Category",
     "is_perishable": "Perishable",
     "default_expiration_days": "Default expiration days",
+    "processing_type": "Material type",
+    "processing_types": {
+      "raw": "Raw material",
+      "processed": "Processed material",
+      "ready_to_use": "Ready to use"
+    },
     "no_materials": "No materials found.",
     "hints": {
       "name": "Use a clear material name for purchases and inventory.",
@@ -481,6 +487,16 @@
       "movement": "Movement",
       "product_waste": "Product waste",
       "new_movement": "New movement",
+      "process_material": "Process material",
+      "process_material_description": "Convert raw material batches into a processed material and calculate the actual yield.",
+      "processed_material": "Processed material",
+      "input_batches": "Raw material batches",
+      "add_batch": "Add batch",
+      "output_quantity": "Processed quantity obtained",
+      "processing_yield": "Actual yield",
+      "processing_waste": "Processing loss",
+      "processing_cost": "Processed unit cost",
+      "processing_saved": "Material processing recorded successfully.",
       "new_product_waste": "Record product waste",
     "movement_type": "Movement type",
       "movement_date": "Movement date",
@@ -534,6 +550,8 @@
       "adjustment_out": "Negative adjustment",
       "waste": "Waste or loss",
       "expired": "Expiration",
+      "processing_out": "Used in processing",
+      "processing_in": "Processing output",
         "sale": "Sale",
         "sale_return": "Returned to inventory",
         "sale_reversal": "Sale reversal"

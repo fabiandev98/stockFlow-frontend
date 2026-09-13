@@ -310,6 +310,12 @@ export default function useAuthenticatedMenu() {
             permissions: PERMISSION.STOCK_MOVEMENTS_READ,
           },
           {
+            label: t("inventory.process_material"),
+            icon: "i-lucide-scissors",
+            to: "/inventory/process-material",
+            permissions: PERMISSION.STOCK_MOVEMENTS_CREATE,
+          },
+          {
             label: t("inventory.product_movements"),
             icon: "i-lucide-package-x",
             to: "/inventory/product-movements",

@@ -2,6 +2,8 @@ import { Repository } from "./repository";
 import type {
   InventoryAlerts,
   InventoryMaterial,
+  MaterialProcessing,
+  MaterialProcessingPayload,
   InventoryStockBatch,
   ProductStockMovement,
   ProductStockMovementPayload,
@@ -79,6 +81,13 @@ export class InventoryRepository extends Repository {
 
   storeStockMovement(payload: StockMovementPayload) {
     return this.api<StockMovement>("/stock-movements", {
+      method: "POST",
+      body: payload,
+    });
+  }
+
+  storeMaterialProcessing(payload: MaterialProcessingPayload) {
+    return this.api<MaterialProcessing>("/material-processings", {
       method: "POST",
       body: payload,
     });

@@ -56,6 +56,36 @@ export interface StockMovement {
   updated_at: string;
 }
 
+export interface MaterialProcessingInputPayload {
+  stock_batch_id: number | null;
+  quantity: number;
+}
+
+export interface MaterialProcessingPayload {
+  output_material_id: number | null;
+  output_quantity: number;
+  inputs: MaterialProcessingInputPayload[];
+  processed_at: string;
+  expiration_date: string | null;
+  notes: string | null;
+}
+
+export interface MaterialProcessing {
+  id: number;
+  source_material_id: number;
+  output_material_id: number;
+  output_stock_batch_id: number | null;
+  input_quantity: string;
+  output_quantity: string;
+  waste_quantity: string;
+  yield_percentage: string;
+  total_input_cost: string;
+  output_unit_cost: string;
+  processed_at: string;
+  expiration_date: string | null;
+  notes: string | null;
+}
+
 export type ProductStockMovementType = "waste" | "expired" | "sale" | "sale_reversal";
 
 export interface ProductStockMovementPayload {

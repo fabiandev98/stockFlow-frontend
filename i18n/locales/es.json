@@ -214,6 +214,12 @@
     "category": "Categoria",
     "is_perishable": "Perecedero",
     "default_expiration_days": "Dias de vencimiento por defecto",
+    "processing_type": "Tipo de material",
+    "processing_types": {
+      "raw": "Materia prima bruta",
+      "processed": "Material procesado",
+      "ready_to_use": "Listo para usar"
+    },
     "no_materials": "No se encontraron materiales.",
     "hints": {
       "name": "Usa un nombre claro para compras e inventario.",
@@ -481,6 +487,16 @@
       "movement": "Movimiento",
       "product_waste": "Merma de producto",
       "new_movement": "Nuevo movimiento",
+      "process_material": "Procesar material",
+      "process_material_description": "Convierte lotes de materia prima en un material procesado y calcula el rendimiento real.",
+      "processed_material": "Material procesado",
+      "input_batches": "Lotes de materia prima",
+      "add_batch": "Agregar lote",
+      "output_quantity": "Cantidad procesada obtenida",
+      "processing_yield": "Rendimiento real",
+      "processing_waste": "Merma de procesamiento",
+      "processing_cost": "Costo unitario procesado",
+      "processing_saved": "Procesamiento de material registrado correctamente.",
       "new_product_waste": "Registrar merma de producto",
     "movement_type": "Tipo de movimiento",
       "movement_date": "Fecha de movimiento",
@@ -534,6 +550,8 @@
       "adjustment_out": "Ajuste negativo",
       "waste": "Merma o pérdida",
       "expired": "Vencimiento",
+      "processing_out": "Usado en procesamiento",
+      "processing_in": "Resultado de procesamiento",
         "sale": "Venta",
         "sale_return": "Devolución al inventario",
         "sale_reversal": "Reversión de venta"

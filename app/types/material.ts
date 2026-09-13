@@ -12,6 +12,7 @@ export interface MaterialCategory extends MaterialCategoryPayload {
 export interface MaterialPayload {
   material_category_id: number | null;
   name: string;
+  processing_type: "raw" | "processed" | "ready_to_use";
   unit: string;
   minimum_stock: number;
   is_perishable: boolean;

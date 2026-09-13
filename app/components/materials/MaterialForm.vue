@@ -49,6 +49,7 @@ const unitItems = [
 const schema = z.object({
   material_category_id: z.number().nullable(),
   name: z.string().min(2),
+  processing_type: z.enum(["raw", "processed", "ready_to_use"]),
   unit: z.string().min(1),
   minimum_stock: z.number().min(0),
   is_perishable: z.boolean(),
@@ -60,6 +61,7 @@ type Schema = z.output<typeof schema>;
 const state = reactive<Schema>({
   material_category_id: props.material?.material_category_id ?? null,
   name: props.material?.name ?? "",
+  processing_type: props.material?.processing_type ?? "raw",
   unit: props.material?.unit ?? "u",
   minimum_stock: Number(props.material?.minimum_stock ?? 0),
   is_perishable: props.material?.is_perishable ?? false,
@@ -97,6 +99,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
       Object.assign(state, {
         material_category_id: null,
         name: "",
+        processing_type: "raw",
         unit: "u",
         minimum_stock: 0,
         is_perishable: false,
@@ -160,6 +163,20 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
         <USelect
           v-model="state.unit"
           :items="unitItems"
+          value-key="value"
+          label-key="label"
+          class="w-full"
+        />
+      </UFormField>
+
+      <UFormField :label="$t('materials.processing_type')" name="processing_type" required>
+        <USelect
+          v-model="state.processing_type"
+          :items="[
+            { label: $t('materials.processing_types.raw'), value: 'raw' },
+            { label: $t('materials.processing_types.processed'), value: 'processed' },
+            { label: $t('materials.processing_types.ready_to_use'), value: 'ready_to_use' },
+          ]"
           value-key="value"
           label-key="label"
           class="w-full"

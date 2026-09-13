@@ -3,6 +3,8 @@ import { InventoryRepository } from "~/repositories/inventory-repository";
 import type {
   InventoryAlerts,
   InventoryMaterial,
+  MaterialProcessing,
+  MaterialProcessingPayload,
   InventoryStockBatch,
   ProductStockMovement,
   ProductStockMovementPayload,
@@ -84,6 +86,12 @@ export function useInventoryModule() {
     return await inventoryRepo.storeStockMovement(payload);
   }
 
+  async function createMaterialProcessing(
+    payload: MaterialProcessingPayload
+  ): Promise<MaterialProcessing> {
+    return await inventoryRepo.storeMaterialProcessing(payload);
+  }
+
   async function createProductStockMovement(
     payload: ProductStockMovementPayload
   ): Promise<ProductStockMovement> {
@@ -99,6 +107,7 @@ export function useInventoryModule() {
     fetchProductStockMovements,
     fetchProductWasteMovements,
     createStockMovement,
+    createMaterialProcessing,
     createProductStockMovement,
   };
 }

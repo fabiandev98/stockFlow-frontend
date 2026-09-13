@@ -46,13 +46,10 @@ function quantity(value: string | number | null | undefined, unit?: string): str
     global-filter-enabled
   >
     <template #header>
-      <UButton
-        icon="i-lucide-plus"
-        color="primary"
-        :to="lp('/inventory/movements/create')"
-      >
-        {{ $t("inventory.new_movement") }}
-      </UButton>
+      <div class="flex gap-2">
+        <UButton icon="i-lucide-scissors" color="neutral" variant="soft" :to="lp('/inventory/process-material')">{{ $t("inventory.process_material") }}</UButton>
+        <UButton icon="i-lucide-plus" color="primary" :to="lp('/inventory/movements/create')">{{ $t("inventory.new_movement") }}</UButton>
+      </div>
     </template>
 
     <template #material-cell="{ row }">
