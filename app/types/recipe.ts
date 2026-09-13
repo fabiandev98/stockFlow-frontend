@@ -5,7 +5,6 @@ import type { User } from "./user";
 export interface RecipeIngredientPayload {
   material_id: number | null;
   net_quantity: number;
-  expected_yield_percentage: number;
 }
 
 export interface RecipePayload {
@@ -19,7 +18,6 @@ export interface RecipePayload {
 export interface RecipeIngredient extends RecipeIngredientPayload {
   id: number;
   material?: Material | null;
-  consumption_quantity: string;
   unit: string;
   position: number;
 }
