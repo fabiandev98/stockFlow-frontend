@@ -34,7 +34,7 @@ const isSubmitting = ref<boolean>(false);
 const nextItemKey = ref<number>(1);
 
 const { data: products } = await useAsyncData("sale-form-products", () =>
-  fetchProducts({ filters: { is_active: true, is_internal_preparation: false } })
+  fetchProducts({ filters: { is_active: true } })
 );
 
 const schema = z.object({
