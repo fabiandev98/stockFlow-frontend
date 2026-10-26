@@ -27,7 +27,6 @@ type ProductKind = "composed" | "simple";
 
 const props = defineProps<{
   product?: Product;
-  mode?: "product" | "preparation";
 }>();
 
 const emit = defineEmits<{
@@ -41,7 +40,6 @@ const { fetchMaterials } = useMaterialModule();
 const { createProduct, updateProduct } = useProductModule();
 
 const isUpdating = computed<boolean>(() => !!props.product);
-const isInternalPreparation = computed(() => props.mode === "preparation");
 const isSubmitting = ref<boolean>(false);
 const nextCompositionKey = ref<number>(1);
 
@@ -57,9 +55,6 @@ const schema = z.object({
   name: z.string().min(2),
   sale_price: z.number().min(0),
   is_composed: z.boolean(),
-  is_internal_preparation: z.boolean(),
-  production_mode: z.enum(["on_sale", "batch"]),
-  shelf_life_days: z.number().int().min(0).nullable(),
   is_active: z.boolean(),
   compositions: z.array(
     z.object({
@@ -77,7 +72,24 @@ const schema = z.object({
     path: ["compositions"],
     message: "Composed products require at least one material",
   }
-);
+).superRefine((data, context) => {
+  if (!data.is_composed) return;
+
+  const selectedIds = new Set<number>();
+  data.compositions.forEach((composition, index) => {
+    if (composition.material_id === null) return;
+
+    if (selectedIds.has(composition.material_id)) {
+      context.addIssue({
+        code: "custom",
+        message: t("products.duplicate_composition_material"),
+        path: ["compositions", index, "material_id"],
+      });
+    }
+
+    selectedIds.add(composition.material_id);
+  });
+});
 
 function createComposition(
   composition?: Partial<ProductFormComposition>
@@ -95,19 +107,13 @@ const state = reactive<{
   name: string;
   sale_price: number;
   is_composed: boolean;
-  is_internal_preparation: boolean;
-  production_mode: "on_sale" | "batch";
-  shelf_life_days: number | null;
   is_active: boolean;
   compositions: ProductFormComposition[];
 }>({
   product_category_id: props.product?.product_category_id ?? null,
   name: props.product?.name ?? "",
   sale_price: Number(props.product?.sale_price ?? 0),
-  is_composed: isInternalPreparation.value || (props.product?.is_composed ?? true),
-  is_internal_preparation: isInternalPreparation.value || (props.product?.is_internal_preparation ?? false),
-  production_mode: isInternalPreparation.value ? "batch" : (props.product?.production_mode ?? "on_sale"),
-  shelf_life_days: props.product?.shelf_life_days ?? null,
+  is_composed: props.product?.is_composed ?? true,
   is_active: props.product?.is_active ?? true,
   compositions:
     props.product?.compositions?.map((composition) =>
@@ -120,6 +126,7 @@ const state = reactive<{
 });
 
 const materialItems = computed<Material[]>(() => materials.value?.data ?? []);
+const canAddComposition = computed(() => state.compositions.filter((composition) => composition.material_id !== null).length < materialItems.value.length);
 const formattedSalePrice = computed<string>(() => formatPeso(state.sale_price));
 const productKind = computed<ProductKind>({
   get: () => (state.is_composed ? "composed" : "simple"),
@@ -130,10 +137,6 @@ const productKind = computed<ProductKind>({
 const productKindItems = computed(() => [
   { label: t("products.composed"), value: "composed" },
   { label: t("products.simple"), value: "simple" },
-]);
-const productionModeItems = computed(() => [
-  { label: t("products.production_on_sale"), value: "on_sale" },
-  { label: t("products.production_by_batch"), value: "batch" },
 ]);
 const productKindHelp = computed<string>(() =>
   state.is_composed
@@ -149,6 +152,13 @@ function selectedMaterial(
   );
 }
 
+function compositionMaterialItems(index: number) {
+  return materialItems.value.map((material) => ({
+    ...material,
+    disabled: state.compositions.some((composition, compositionIndex) => compositionIndex !== index && composition.material_id === material.id),
+  }));
+}
+
 function handleMaterialChange(composition: ProductFormComposition): void {
   const material = selectedMaterial(composition);
   if (material) {
@@ -157,6 +167,8 @@ function handleMaterialChange(composition: ProductFormComposition): void {
 }
 
 function addComposition(): void {
+  if (!canAddComposition.value) return;
+
   state.compositions.push(createComposition());
 }
 
@@ -169,13 +181,10 @@ function payloadFromState(): ProductPayload {
   return {
     product_category_id: state.product_category_id,
     name: state.name,
-    sale_price: isInternalPreparation.value ? 0 : state.sale_price,
-    is_composed: isInternalPreparation.value || state.is_composed,
-    is_internal_preparation: isInternalPreparation.value || state.is_composed && state.production_mode === "batch" && state.is_internal_preparation,
-    production_mode: isInternalPreparation.value ? "batch" : state.is_composed ? state.production_mode : "on_sale",
-    shelf_life_days: (isInternalPreparation.value || state.is_composed && state.production_mode === "batch") ? state.shelf_life_days : null,
+    sale_price: state.sale_price,
+    is_composed: state.is_composed,
     is_active: state.is_active,
-    compositions: (isInternalPreparation.value || state.is_composed)
+    compositions: state.is_composed
       ? state.compositions.map((composition) => ({
           material_id: composition.material_id,
           quantity_required: composition.quantity_required,
@@ -213,9 +222,6 @@ async function onSubmit() {
         name: "",
         sale_price: 0,
         is_composed: true,
-        is_internal_preparation: false,
-        production_mode: "on_sale",
-        shelf_life_days: null,
         is_active: true,
         compositions: [createComposition()],
       });
@@ -264,7 +270,7 @@ async function onSubmit() {
       </UFormField>
     </div>
 
-    <div v-if="!isInternalPreparation" class="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
       <UFormField name="sale_price">
         <template #label>
           <SharedFormFieldLabel
@@ -296,7 +302,7 @@ async function onSubmit() {
       <UCheckbox v-model="state.is_active" :label="$t('products.is_active')" />
     </UFormField>
 
-    <UFormField v-if="!isInternalPreparation" name="is_composed">
+    <UFormField name="is_composed">
       <template #label>
         <SharedFormFieldLabel
           :label="$t('products.product_type')"
@@ -315,19 +321,7 @@ async function onSubmit() {
       </p>
     </UFormField>
 
-    <div v-if="state.is_composed || isInternalPreparation" class="space-y-3">
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 rounded border border-neutral-200 p-3">
-        <UFormField v-if="!isInternalPreparation" :label="$t('products.production_mode')" name="production_mode">
-          <USelect v-model="state.production_mode" :items="productionModeItems" value-key="value" label-key="label" class="w-full" />
-        </UFormField>
-        <UFormField v-if="isInternalPreparation || state.production_mode === 'batch'" :label="$t('products.shelf_life_days')" name="shelf_life_days">
-          <UInput v-model.number="state.shelf_life_days" type="number" min="0" step="1" class="w-full" />
-        </UFormField>
-        <UFormField v-if="!isInternalPreparation && state.production_mode === 'batch'" name="is_internal_preparation" class="md:col-span-2">
-          <UCheckbox v-model="state.is_internal_preparation" :label="$t('products.is_internal_preparation')" />
-          <p class="mt-1 text-sm text-muted">{{ $t('products.is_internal_preparation_help') }}</p>
-        </UFormField>
-      </div>
+    <div v-if="state.is_composed" class="space-y-3">
       <div class="flex items-center justify-between gap-3">
         <h2 class="text-base font-medium">
           {{ $t("products.compositions") }}
@@ -336,6 +330,7 @@ async function onSubmit() {
           type="button"
           icon="i-lucide-plus"
           variant="soft"
+          :disabled="!canAddComposition"
           @click="addComposition"
         >
           {{ $t("products.add_composition") }}
@@ -360,7 +355,7 @@ async function onSubmit() {
           </template>
           <USelect
             v-model="composition.material_id"
-            :items="materialItems"
+            :items="compositionMaterialItems(index)"
             value-key="id"
             label-key="name"
             class="w-full"

@@ -17,6 +17,10 @@ const saving = ref(false);
 const nextKey = ref(1);
 const { data: materials } = await useAsyncData("recipe-materials", () => fetchMaterials({}));
 const materialItems = computed<Material[]>(() => materials.value?.data ?? []);
+const recipeUnitItems = computed(() => ["g", "kg", "ml", "l", "oz", "lb", "u", "box", "pack"].map((value) => ({
+  value,
+  label: t(`materials.units.${value}`),
+})));
 
 function row(source?: Partial<IngredientForm>): IngredientForm {
   return { key: nextKey.value++, material_id: source?.material_id ?? null, net_quantity: source?.net_quantity ?? 1 };
@@ -34,6 +38,16 @@ const state = reactive<{ yield_quantity: number; yield_unit: string; target_food
 
 function addIngredient(): void { state.ingredients.push(row()); }
 function removeIngredient(index: number): void { if (state.ingredients.length > 1) state.ingredients.splice(index, 1); }
+
+function materialUnit(materialId: number | null): string | null {
+  return materialItems.value.find((material) => material.id === materialId)?.unit ?? null;
+}
+
+function ingredientQuantityLabel(materialId: number | null): string {
+  const unit = materialUnit(materialId);
+
+  return unit ? `${t("recipes.net_quantity")} (${unit})` : t("recipes.net_quantity");
+}
 
 async function submit(): Promise<void> {
   if (saving.value || state.ingredients.some((item) => item.material_id === null)) return;
@@ -57,15 +71,15 @@ async function submit(): Promise<void> {
 <template>
   <form class="space-y-6" @submit.prevent="submit">
     <div class="grid gap-4 md:grid-cols-3">
-      <UFormField :label="$t('recipes.recipe_yield')" required><UInput v-model.number="state.yield_quantity" type="number" min="0.01" step="0.01" /></UFormField>
-      <UFormField :label="$t('recipes.yield_unit')" required><UInput v-model="state.yield_unit" maxlength="50" /></UFormField>
-      <UFormField :label="$t('recipes.target_food_cost')"><UInput v-model.number="state.target_food_cost_percentage" type="number" min="0.01" max="100" step="0.01" /></UFormField>
+      <UFormField :label="$t('recipes.recipe_yield')" required><UInput v-model.number="state.yield_quantity" type="number" min="1" step="1" /></UFormField>
+      <UFormField :label="$t('recipes.yield_unit')" required><USelect v-model="state.yield_unit" :items="recipeUnitItems" value-key="value" class="w-full" /></UFormField>
+      <UFormField :label="$t('recipes.target_food_cost')"><UInput v-model.number="state.target_food_cost_percentage" type="number" min="1" max="100" step="1" /></UFormField>
     </div>
 
     <div class="flex items-center justify-between gap-3"><h2 class="font-semibold">{{ $t("recipes.ingredients") }}</h2><UButton type="button" icon="i-lucide-plus" variant="soft" @click="addIngredient">{{ $t("recipes.add_ingredient") }}</UButton></div>
     <div v-for="(item, index) in state.ingredients" :key="item.key" class="grid items-end gap-3 rounded-lg border border-default bg-elevated/30 p-4 md:grid-cols-[minmax(13rem,2fr)_minmax(8rem,1fr)_auto]">
       <UFormField :label="$t('recipes.material')" required><USelect v-model="item.material_id" :items="materialItems" value-key="id" label-key="name" class="w-full" /></UFormField>
-      <UFormField :label="$t('recipes.net_quantity')" required><UInput v-model.number="item.net_quantity" type="number" min="0.0001" step="0.0001" /></UFormField>
+      <UFormField :label="ingredientQuantityLabel(item.material_id)" required><UInput v-model.number="item.net_quantity" type="number" min="0.001" step="0.001" /></UFormField>
       <UButton type="button" icon="i-lucide-trash-2" color="error" variant="ghost" :disabled="state.ingredients.length === 1" @click="removeIngredient(index)" />
     </div>
     <UFormField :label="$t('recipes.instructions')"><UTextarea v-model="state.instructions" :rows="4" class="w-full" /></UFormField>

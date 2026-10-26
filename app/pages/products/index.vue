@@ -40,10 +40,7 @@ function fetchSellableProducts(params: {
   filters?: Record<string, string | number | boolean>;
   sort?: string;
 }) {
-  return fetchProducts({
-    ...params,
-    filters: { ...params.filters, is_internal_preparation: false },
-  });
+  return fetchProducts(params);
 }
 
 const columns: TableColumn<Product>[] = [
@@ -160,15 +157,6 @@ async function handleDelete(
           :to="lp('/recipes/edit-' + row.original.id)"
         >
           {{ $t("recipes.title") }}
-        </UButton>
-        <UButton
-          v-if="row.original.is_composed && row.original.production_mode === 'batch' && userCan(PERMISSION.PRODUCTS_UPDATE)"
-          icon="i-lucide-chef-hat"
-          color="primary"
-          variant="soft"
-          :to="lp('/products/produce-' + row.original.id)"
-        >
-          {{ $t("products.produce") }}
         </UButton>
       </div>
     </template>
