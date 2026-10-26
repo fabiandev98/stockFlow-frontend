@@ -8,6 +8,7 @@ export interface InventoryMaterial extends Material {
   available_stock: string;
   is_low_stock: boolean;
   next_expiration_date: string | null;
+  average_processing_yield: string | null;
 }
 
 export type InventoryStockBatch = StockBatch;
@@ -56,18 +57,24 @@ export interface StockMovement {
   updated_at: string;
 }
 
-export interface MaterialProcessingInputPayload {
-  stock_batch_id: number | null;
-  quantity: number;
-}
-
 export interface MaterialProcessingPayload {
   output_material_id: number | null;
   output_quantity: number;
-  inputs: MaterialProcessingInputPayload[];
+  inputs: Array<{ stock_batch_id: number | null; quantity: number }>;
   processed_at: string;
   expiration_date: string | null;
   notes: string | null;
+}
+
+export interface MaterialProcessingBatchPayload {
+  processed_at: string;
+  notes: string | null;
+  items: Array<{
+    output_material_id: number;
+    output_quantity: number;
+    expiration_date: string | null;
+    inputs: Array<{ stock_batch_id: number | null; quantity: number }>;
+  }>;
 }
 
 export interface MaterialProcessing {

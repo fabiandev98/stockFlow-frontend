@@ -4,6 +4,7 @@ import type {
   InventoryMaterial,
   MaterialProcessing,
   MaterialProcessingPayload,
+  MaterialProcessingBatchPayload,
   InventoryStockBatch,
   ProductStockMovement,
   ProductStockMovementPayload,
@@ -88,6 +89,13 @@ export class InventoryRepository extends Repository {
 
   storeMaterialProcessing(payload: MaterialProcessingPayload) {
     return this.api<MaterialProcessing>("/material-processings", {
+      method: "POST",
+      body: payload,
+    });
+  }
+
+  storeMaterialProcessingBatch(payload: MaterialProcessingBatchPayload) {
+    return this.api<MaterialProcessing[]>("/material-processings/batch", {
       method: "POST",
       body: payload,
     });

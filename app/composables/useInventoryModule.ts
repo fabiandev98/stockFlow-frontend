@@ -5,6 +5,7 @@ import type {
   InventoryMaterial,
   MaterialProcessing,
   MaterialProcessingPayload,
+  MaterialProcessingBatchPayload,
   InventoryStockBatch,
   ProductStockMovement,
   ProductStockMovementPayload,
@@ -92,6 +93,12 @@ export function useInventoryModule() {
     return await inventoryRepo.storeMaterialProcessing(payload);
   }
 
+  async function createMaterialProcessingBatch(
+    payload: MaterialProcessingBatchPayload
+  ): Promise<MaterialProcessing[]> {
+    return await inventoryRepo.storeMaterialProcessingBatch(payload);
+  }
+
   async function createProductStockMovement(
     payload: ProductStockMovementPayload
   ): Promise<ProductStockMovement> {
@@ -108,6 +115,7 @@ export function useInventoryModule() {
     fetchProductWasteMovements,
     createStockMovement,
     createMaterialProcessing,
+    createMaterialProcessingBatch,
     createProductStockMovement,
   };
 }
