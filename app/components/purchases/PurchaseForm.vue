@@ -54,7 +54,7 @@ const { data: suppliers } = await useAsyncData("purchase-form-suppliers", () =>
   fetchSuppliers({})
 );
 const { data: materials } = await useAsyncData("purchase-form-materials", () =>
-  fetchMaterials({})
+  fetchMaterials({ filters: { processing_type: "raw" } })
 );
 const { data: products } = await useAsyncData("purchase-form-products", () =>
   fetchProducts({ filters: { is_composed: false, is_active: true } })

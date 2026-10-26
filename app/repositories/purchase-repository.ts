@@ -1,5 +1,5 @@
 import { Repository } from "./repository";
-import type { Purchase, PurchaseItem, PurchaseItemYieldPayload, PurchasePayload } from "~/types/purchase";
+import type { Purchase, PurchasePayload } from "~/types/purchase";
 import type { LaravelPaginationWrapper } from "~/types/pagination";
 
 const BASE_ENDPOINT_URL = "/purchases";
@@ -40,14 +40,4 @@ export class PurchaseRepository extends Repository {
     });
   }
 
-  pendingReviews(queryString?: string) {
-    const endpoint = queryString
-      ? `${BASE_ENDPOINT_URL}/pending-reviews?${queryString}`
-      : `${BASE_ENDPOINT_URL}/pending-reviews`;
-    return this.api<LaravelPaginationWrapper<Purchase>>(endpoint, { method: "GET" });
-  }
-
-  storeItemYield(purchaseId: number, itemId: number, payload: PurchaseItemYieldPayload) {
-    return this.api<PurchaseItem>(`${BASE_ENDPOINT_URL}/${purchaseId}/items/${itemId}/yield`, { method: "POST", body: payload });
-  }
 }

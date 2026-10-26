@@ -3,19 +3,14 @@ import {
   computed,
   createError,
   definePageMeta,
-  reactive,
-  ref,
   useAsyncData,
   useI18n,
   useLocalePath,
   usePurchaseModule,
   useRoute,
-  useToast,
 } from "#imports";
-import { FetchError } from "ofetch";
 import { HTTP_STATUS } from "~/constants/http-statuses";
 import { PERMISSION } from "~/constants/permissions";
-import type { Purchase, PurchaseItem, PurchaseItemYieldPayload } from "~/types/purchase";
 import { formatPeso } from "~/utils/currency-format";
 import { formatDisplayDate } from "~/utils/date-format";
 
@@ -27,13 +22,9 @@ definePageMeta({
 const { t } = useI18n();
 const lp = useLocalePath();
 const route = useRoute();
-const toast = useToast();
-const { fetchPurchaseById, savePurchaseItemYield } = usePurchaseModule();
-const savingYieldItemId = ref<number | null>(null);
-const itemYieldForms = reactive<Record<number, PurchaseItemYieldPayload>>({});
-const editingYieldItems = reactive<Record<number, boolean>>({});
+const { fetchPurchaseById } = usePurchaseModule();
 
-const { data, error, refresh: refreshPurchase } = await useAsyncData(() =>
+const { data, error } = await useAsyncData(() =>
   fetchPurchaseById(Number(route.params.id))
 );
 
@@ -57,61 +48,6 @@ function quantity(
   return unit ? `${amount} ${unit}` : amount;
 }
 
-function synchronizeYieldForms(purchase: Purchase): void {
-  for (const item of purchase.items ?? []) {
-    itemYieldForms[item.id] = {
-      usable_quantity: item.usable_quantity === null ? Number(item.accepted_quantity) : Number(item.usable_quantity),
-      processing_waste_reason: item.processing_waste_reason,
-    };
-    editingYieldItems[item.id] = false;
-  }
-}
-
-synchronizeYieldForms(data.value);
-
-function itemUnit(item: PurchaseItem): string | null | undefined {
-  return item.product ? "u" : item.material?.unit;
-}
-
-function yieldPercentage(item: PurchaseItem): string {
-  const usableQuantity = itemYieldForms[item.id]?.usable_quantity ?? 0;
-  const acceptedQuantity = Number(item.accepted_quantity);
-
-  return acceptedQuantity > 0 ? `${((usableQuantity / acceptedQuantity) * 100).toFixed(2)}%` : "0.00%";
-}
-
-function processingWaste(item: PurchaseItem): string {
-  const usableQuantity = itemYieldForms[item.id]?.usable_quantity ?? 0;
-
-  return quantity(Number(item.accepted_quantity) - usableQuantity, itemUnit(item));
-}
-
-function isYieldLocked(item: PurchaseItem): boolean {
-  return item.yield_recorded_at !== null && !editingYieldItems[item.id];
-}
-
-function editItemYield(item: PurchaseItem): void {
-  editingYieldItems[item.id] = true;
-}
-
-async function saveItemYield(item: PurchaseItem): Promise<void> {
-  if (!data.value || savingYieldItemId.value !== null) return;
-  savingYieldItemId.value = item.id;
-  try {
-    await savePurchaseItemYield(data.value.id, item.id, itemYieldForms[item.id]);
-    await refreshPurchase();
-    if (data.value) synchronizeYieldForms(data.value);
-    toast.add({ title: t("purchases.yield_saved"), color: "success" });
-  } catch (error: unknown) {
-    toast.add({
-      title: t("common.generic_error_title"),
-      description: error instanceof FetchError ? error.data?.message ?? error.message : t("common.generic_unknown_error"),
-      color: "error",
-    });
-  } finally {
-    savingYieldItemId.value = null;
-  }
-}
 </script>
 
 <template>
@@ -242,54 +178,6 @@ async function saveItemYield(item: PurchaseItem): Promise<void> {
             </p>
           </div>
         </div>
-
-        <UCard>
-          <template #header>
-            <div class="flex items-center justify-between gap-3">
-              <h3 class="font-medium">{{ $t("purchases.processing_result") }}</h3>
-              <UButton v-if="isYieldLocked(item)" color="neutral" variant="soft" icon="i-lucide-pencil" size="sm" @click="editItemYield(item)">{{ $t("purchases.edit_yield") }}</UButton>
-            </div>
-          </template>
-
-          <div v-if="isYieldLocked(item)" class="rounded-lg border border-default bg-muted/40 p-4">
-            <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-6">
-              <div><p class="text-sm text-muted">{{ $t("purchases.accepted_quantity") }}</p><p class="mt-1 font-medium">{{ quantity(item.accepted_quantity, itemUnit(item)) }}</p></div>
-              <div><p class="text-sm text-muted">{{ $t("purchases.usable_quantity") }}</p><p class="mt-1 font-medium">{{ quantity(item.usable_quantity, itemUnit(item)) }}</p></div>
-              <div><p class="text-sm text-muted">{{ $t("purchases.yield_percentage") }}</p><p class="mt-1 font-medium">{{ yieldPercentage(item) }}</p></div>
-              <div><p class="text-sm text-muted">{{ $t("purchases.processing_waste") }}</p><p class="mt-1 font-medium">{{ processingWaste(item) }}</p></div>
-              <div><p class="text-sm text-muted">{{ $t("purchases.reviewed_on") }}</p><p class="mt-1 font-medium">{{ formatDisplayDate(item.yield_recorded_at) }}</p></div>
-              <div><p class="text-sm text-muted">{{ $t("purchases.reviewed_by") }}</p><p class="mt-1 font-medium">{{ item.yield_reviewer?.name ?? "-" }}</p></div>
-            </div>
-            <div v-if="item.processing_waste_reason" class="mt-4 border-t border-default pt-3"><p class="text-sm text-muted">{{ $t("purchases.processing_waste_reason") }}</p><p class="mt-1 text-sm">{{ item.processing_waste_reason }}</p></div>
-          </div>
-
-          <form v-else class="space-y-4" @submit.prevent="saveItemYield(item)">
-            <p class="text-sm text-muted">{{ $t("purchases.yield_help") }}</p>
-            <div class="grid gap-4 md:grid-cols-4">
-              <div>
-                <p class="text-sm text-muted">{{ $t("purchases.accepted_quantity") }}</p>
-                <p class="mt-1 font-medium">{{ quantity(item.accepted_quantity, itemUnit(item)) }}</p>
-              </div>
-              <UFormField :label="$t('purchases.usable_quantity')">
-                <UInput v-model.number="itemYieldForms[item.id].usable_quantity" type="number" min="0" :max="Number(item.accepted_quantity)" step="0.01" />
-              </UFormField>
-              <div>
-                <p class="text-sm text-muted">{{ $t("purchases.yield_percentage") }}</p>
-                <p class="mt-1 font-medium">{{ yieldPercentage(item) }}</p>
-              </div>
-              <div>
-                <p class="text-sm text-muted">{{ $t("purchases.processing_waste") }}</p>
-                <p class="mt-1 font-medium">{{ processingWaste(item) }}</p>
-              </div>
-            </div>
-            <div class="grid items-end gap-4 md:grid-cols-[minmax(0,1fr)_auto]">
-              <UFormField :label="$t('purchases.processing_waste_reason')">
-                <UTextarea v-model="itemYieldForms[item.id].processing_waste_reason" :rows="2" class="w-full" />
-              </UFormField>
-              <UButton type="submit" :loading="savingYieldItemId === item.id" icon="i-lucide-scale">{{ item.yield_recorded_at ? $t("purchases.update_yield") : $t("purchases.save_yield") }}</UButton>
-            </div>
-          </form>
-        </UCard>
 
         <div v-if="item.stock_batches?.length" class="space-y-2">
           <h3 class="text-sm font-medium">
