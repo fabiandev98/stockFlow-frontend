@@ -111,6 +111,12 @@ export default function useAuthenticatedMenu() {
             permissions: PERMISSION.MATERIALS_READ,
           },
           {
+            label: t("materials.processed_index"),
+            icon: "i-lucide-scan-line",
+            to: "/materials/processed",
+            permissions: PERMISSION.MATERIALS_READ,
+          },
+          {
             label: t("material_categories.menu_title"),
             icon: "i-lucide-tags",
             permissions: [
@@ -183,12 +189,6 @@ export default function useAuthenticatedMenu() {
             permissions: PERMISSION.PRODUCTS_READ,
           },
           {
-            label: t("internal_preparations.title"),
-            icon: "i-lucide-cooking-pot",
-            to: "/internal-preparations",
-            permissions: PERMISSION.PRODUCTS_READ,
-          },
-          {
             label: t("recipes.title"),
             icon: "i-lucide-chef-hat",
             to: "/recipes",
@@ -240,12 +240,6 @@ export default function useAuthenticatedMenu() {
             label: t("purchases.index"),
             icon: "i-lucide-list",
             to: "/purchases",
-            permissions: PERMISSION.PURCHASES_READ,
-          },
-          {
-            label: t("purchases.pending_reviews"),
-            icon: "i-lucide-clipboard-check",
-            to: "/purchases/pending-reviews",
             permissions: PERMISSION.PURCHASES_READ,
           },
         ],
