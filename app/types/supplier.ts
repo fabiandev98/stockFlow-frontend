@@ -24,10 +24,6 @@ export interface SupplierQualityMetrics {
   positive_feedback_percentage: number;
   average_rating: number;
   feedback_incidents: number;
-  evaluated_items: number;
-  average_yield_percentage: number;
-  processing_waste_quantity: number;
-  processing_waste_value: number;
 }
 
 export interface SupplierNotePayload {

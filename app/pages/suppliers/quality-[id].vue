@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, reactive, ref } from "vue";
 import { FetchError } from "ofetch";
-import { definePageMeta, useAsyncData, useI18n, useRoute, useSupplierModule, useToast } from "#imports";
+import { definePageMeta, useAsyncData, useI18n, usePurchaseModule, useRoute, useSupplierModule, useToast } from "#imports";
 import { PERMISSION } from "~/constants/permissions";
 import type { SupplierNotePayload } from "~/types/supplier";
 import { formatPeso } from "~/utils/currency-format";
@@ -16,16 +16,18 @@ const toast = useToast();
 const confirmDialog = useConfirmDialog();
 const supplierId = computed(() => Number(route.params.id));
 const { fetchSupplierById, fetchSupplierNotes, fetchSupplierQuality, createSupplierNote, deleteSupplierNote } = useSupplierModule();
+const { fetchPurchases } = usePurchaseModule();
 const isSavingNote = ref(false);
 const deletingNoteId = ref<number | null>(null);
 const supplierNote = reactive<SupplierNotePayload>({ rating: "good", issue_type: null, note: null });
 const { data, refresh } = await useAsyncData(`supplier-quality-${supplierId.value}`, async () => {
-  const [supplier, metrics, notes] = await Promise.all([
+  const [supplier, metrics, notes, purchases] = await Promise.all([
     fetchSupplierById(supplierId.value),
     fetchSupplierQuality(supplierId.value),
     fetchSupplierNotes(supplierId.value),
+    fetchPurchases({ filters: { supplier_id: supplierId.value } }),
   ]);
-  return { supplier, metrics, notes };
+  return { supplier, metrics, notes, purchases: purchases.data };
 });
 
 async function saveSupplierNote(): Promise<void> {
@@ -96,23 +98,6 @@ async function removeSupplierNote(noteId: number): Promise<void> {
 
     <UCard>
       <template #header>
-        <h2 class="font-semibold">{{ $t("suppliers.processing_yield") }}</h2>
-      </template>
-
-      <div class="grid gap-4 md:grid-cols-2">
-        <div>
-          <p class="text-sm text-muted">{{ $t("suppliers.average_yield") }}</p>
-          <p class="text-xl font-semibold">{{ Number(data?.metrics.average_yield_percentage ?? 0).toFixed(2) }}%</p>
-        </div>
-        <div>
-          <p class="text-sm text-muted">{{ $t("suppliers.processing_waste_value") }}</p>
-          <p class="text-xl font-semibold">{{ formatPeso(data?.metrics.processing_waste_value ?? 0) }}</p>
-        </div>
-      </div>
-    </UCard>
-
-    <UCard>
-      <template #header>
         <h2 class="font-semibold">{{ $t("suppliers.quantity_quality_detail") }}</h2>
       </template>
 
@@ -128,6 +113,37 @@ async function removeSupplierNote(noteId: number): Promise<void> {
         <div>
           <p class="text-sm text-muted">{{ $t("suppliers.rejected_quantity") }}</p>
           <p class="text-xl font-semibold">{{ Number(data?.metrics.rejected_quantity ?? 0).toFixed(2) }}</p>
+        </div>
+      </div>
+    </UCard>
+
+    <UCard>
+      <template #header>
+        <h2 class="font-semibold">{{ $t("suppliers.purchase_history") }}</h2>
+      </template>
+
+      <div class="overflow-x-auto">
+        <table v-if="(data?.purchases?.length ?? 0) > 0" class="w-full min-w-[520px] text-sm">
+          <thead class="border-y border-default text-left text-muted">
+            <tr>
+              <th class="px-3 py-3 font-medium">{{ $t("common.id") }}</th>
+              <th class="px-3 py-3 font-medium">{{ $t("purchases.purchase_date") }}</th>
+              <th class="px-3 py-3 text-right font-medium">{{ $t("purchases.items_count") }}</th>
+              <th class="px-3 py-3 text-right font-medium">{{ $t("purchases.total_cost") }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="purchase in data?.purchases ?? []" :key="purchase.id" class="border-b border-default last:border-0">
+              <td class="px-3 py-3 font-medium">#{{ purchase.id }}</td>
+              <td class="whitespace-nowrap px-3 py-3">{{ formatDisplayDate(purchase.purchase_date) }}</td>
+              <td class="px-3 py-3 text-right">{{ purchase.items_count ?? 0 }}</td>
+              <td class="px-3 py-3 text-right font-medium">{{ formatPeso(purchase.total_cost) }}</td>
+            </tr>
+          </tbody>
+        </table>
+        <div v-else class="flex flex-col items-center justify-center rounded-lg border border-dashed border-default px-6 py-8 text-center">
+          <UIcon name="i-lucide-shopping-cart" class="size-6 text-muted" />
+          <p class="mt-2 text-sm text-muted">{{ $t("suppliers.no_purchase_history") }}</p>
         </div>
       </div>
     </UCard>
